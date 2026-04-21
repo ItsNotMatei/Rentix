@@ -1,2 +1,2 @@
-# matei e prost
+# Rentix
 Site
