@@ -1,0 +1,124 @@
+ * {
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+
+body {
+    margin: 0;
+    height: 100vh;
+    background: #0b0f1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* CARD */
+.card {
+    width: 360px;
+    height: 520px;
+    background: linear-gradient(
+        to bottom,
+        #0a1a2f 0%,
+        #000000 45%
+    );
+    border-radius: 25px;
+    padding: 40px 30px;
+    box-shadow: 0 0 40px rgba(0, 150, 255, 0.25);
+    position: relative;
+    overflow: hidden;
+    color: #4da6ff;
+}
+
+
+/* EFECT DE STELE */
+.card::before {
+    content: "";
+    position: absolute;
+    top: -40px;
+    left: -40px;
+    width: 120%;
+    height: 45%;
+    background:
+        radial-gradient(2px 2px at 20% 30%, white, transparent),
+        radial-gradient(1.5px 1.5px at 60% 20%, white, transparent),
+        radial-gradient(1px 1px at 80% 40%, white, transparent),
+        radial-gradient(1.5px 1.5px at 30% 60%, white, transparent),
+        radial-gradient(1px 1px at 70% 70%, white, transparent);
+    opacity: 0.8;
+}
+
+
+/* TITLU */
+h2 {
+    margin-top: 60px;
+    margin-bottom: 30px;
+    font-size: 28px;
+    font-weight: 600;
+    color: #3da5ff;
+}
+
+
+/* INPUTS */
+input {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0 20px;
+    background: transparent;
+    border: 2px solid #1e90ff;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+}
+
+
+input::placeholder {
+    color: #6faee6;
+}
+
+
+input:focus {
+    outline: none;
+    box-shadow: 0 0 10px rgba(30,144,255,0.7);
+}
+
+
+/* BUTON */
+button {
+    margin-top: 10px;
+    padding: 10px 18px;
+    background: transparent;
+    border: 2px solid #1e90ff;
+    border-radius: 8px;
+    color: #1e90ff;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+
+button:hover {
+    background: #1e90ff;
+    color: black;
+    box-shadow: 0 0 15px rgba(30,144,255,0.8);
+}
+
+
+/* SWITCH LOGIN / REGISTER */
+.switch {
+    margin-top: 25px;
+    font-size: 13px;
+    color: #7fbfff;
+}
+
+
+.switch span {
+    color: #1e90ff;
+    cursor: pointer;
+}
+
+
+.switch span:hover {
+    text-decoration: underline;
+}
