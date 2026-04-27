@@ -1,0 +1,27 @@
+.search-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 2px solid green;
+  margin-top: 5px;
+  padding: 10px;
+}
+
+.filter-button {
+  padding: 30px 50px;
+  border: 2px solid green;
+  background: transparent;
+  color: green;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 20px;
+}
+
+.search-input {
+  width: 300px;
+  padding: 30px;
+  border: 2px solid green;
+  border-radius: 8px;
+  font-size: 20px;
+}
