@@ -1,2 +1,0 @@
-# Rentix
-Site
