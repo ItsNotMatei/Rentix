@@ -1,27 +1,47 @@
 .search-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    border-bottom: 2px solid green;
-    margin-top: 5px;
-    padding: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 2px solid green;
+  margin-top: 5px;
+  padding: 12px 20px;
+  background: linear-gradient(to right, #f9f9f9, #f3fff3);
 }
 
 .filter-button {
-    padding: 30px 50px;
-    border: 2px solid green;
-    background: transparent;
-    color: green;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 20px;
+  padding: 14px 24px;
+  border: 2px solid green;
+  background: #fff;
+  color: green;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+
+  transition: all 0.25s ease;
+}
+
+.filter-button:hover {
+  background: green;
+  color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 128, 0, 0.25);
 }
 
 .search-input {
-    width: 300px;
-    padding: 30px;
-    border: 2px solid green;
-    border-radius: 8px;
-    font-size: 20px;
+  width: 260px;
+  padding: 16px 20px;
+  border: 2px solid green;
+  border-radius: 10px;
+  font-size: 18px;
+  outline: none;
+
+  transition: width 0.3s ease, box-shadow 0.25s ease;
+}
+
+.search-input:focus {
+  width: 340px;
+  box-shadow: 0 0 0 3px rgba(0, 128, 0, 0.2);
+  background-color: #f6fff6;
 }
