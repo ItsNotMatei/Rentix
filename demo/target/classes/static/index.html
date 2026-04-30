@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rentix - Obține orice</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+    <div class="nav-container">
+
+        <div class="logo">Rentix</div>
+
+        <nav class="nav-links">
+
+            <div class="dropdown">
+                <button class="dropdown-btn" id="catBtn">Categorii ▾</button>
+
+                <div class="dropdown-menu" id="catMenu">
+
+                    <input type="text" class="dropdown-search" placeholder="Caută categorie...">
+
+                    <div class="dropdown-list">
+
+                        <div class="cat-group">Vehicule</div>
+                        <label><input type="radio" name="cat"> Mașini</label>
+                        <label><input type="radio" name="cat"> Motociclete</label>
+                        <label><input type="radio" name="cat"> Biciclete</label>
+
+                        <div class="cat-group">Locuințe</div>
+                        <label><input type="radio" name="cat"> Apartamente</label>
+                        <label><input type="radio" name="cat"> Case</label>
+                        <label><input type="radio" name="cat"> Garsoniere</label>
+
+                        <div class="cat-group">Utilaje</div>
+                        <label><input type="radio" name="cat"> Construcții</label>
+                        <label><input type="radio" name="cat"> Agricultură</label>
+                        <label><input type="radio" name="cat"> Industrial</label>
+
+                        <div class="cat-group">Tehnologie</div>
+                        <label><input type="radio" name="cat"> Laptopuri</label>
+                        <label><input type="radio" name="cat"> Telefoane</label>
+                        <label><input type="radio" name="cat"> Console</label>
+
+                        <div class="cat-group">Fashion</div>
+                        <label><input type="radio" name="cat"> Bărbați</label>
+                        <label><input type="radio" name="cat"> Femei</label>
+                        <label><input type="radio" name="cat"> Încălțăminte</label>
+
+                        <div class="cat-group">Hobby</div>
+                        <label><input type="radio" name="cat"> Instrumente</label>
+                        <label><input type="radio" name="cat"> Muzică</label>
+
+                        <div class="cat-group">Media</div>
+                        <label><input type="radio" name="cat"> Foto</label>
+                        <label><input type="radio" name="cat"> Video</label>
+
+                        <div class="cat-group">Lifestyle</div>
+                        <label><input type="radio" name="cat"> Sport</label>
+                        <label><input type="radio" name="cat"> Outdoor</label>
+
+                    </div>
+                </div>
+            </div>
+
+            <a href="Cum-functioneaza.html">Cum funcționează</a>
+
+        </nav>
+
+        <div class="search-bar-nav">
+            <input type="text" placeholder="Caută produse, utilizatori, orașe...">
+        </div>
+
+        <div class="nav-right">
+            <a href="#" class="nav-icon">♡ Favorite</a>
+            <a href="#" class="nav-icon">✉ Mesaje</a>
+            <a href="#" class="nav-icon"></a>
+            <a href="login.html" class="btn dark">Autentificare</a>
+            <a href="singup.html" class="btn outline">Înregistrare</a>
+        </div>
+
+    </div>
+</header>
+
+<section class="hero">
+    <div class="hero-container">
+
+        <div class="hero-content">
+            <h1>Închiriază. Vinde. Economisește.</h1>
+            <p>Descoperă mii de produse aproape de tine.</p>
+
+            <div class="hero-tabs">
+                <button class="tab active">Toate</button>
+                <button class="tab">Închirieri</button>
+                <button class="tab">Vânzări</button>
+            </div>
+
+            <div class="hero-search">
+                <input type="text" placeholder="Caută produse, categorii..." class="input-main">
+                <input type="text" placeholder="Locație" class="input-loc">
+                <button class="btn-search">Caută</button>
+                <button class="btn-filters">⚙ Filtre</button>
+            </div>
+        </div>
+
+        <div class="hero-image">
+            <img src="https://i.imgur.com/3Z4Y5X6.png" alt="Rentix Items">
+        </div>
+
+    </div>
+</section>
+
+<section class="section-container">
+    <h3>Categorii populare</h3>
+
+    <div class="cat-grid">
+        <div class="cat-item">🚗 Vehicule</div>
+        <div class="cat-item">🏠 Locuințe</div>
+        <div class="cat-item">🏗️ Utilaje</div>
+        <div class="cat-item">💻 Tehnologie</div>
+        <div class="cat-item">👗 Haine</div>
+        <div class="cat-item">🎸 Instrumente</div>
+        <div class="cat-item">📸 Foto-Video</div>
+        <div class="cat-item">🚲 Sport</div>
+    </div>
+</section>
+
+<section class="section-container">
+    <div class="section-header">
+        <h3>Anunțuri recomandate</h3>
+        <a href="#" class="see-all">Vezi toate</a>
+    </div>
+
+    <div class="product-grid">
+
+        <div class="card">
+            <div class="card-img">
+                <span class="badge rent">Închiriere</span>
+                <img src="https://via.placeholder.com/250x180">
+            </div>
+            <div class="card-info">
+                <h4>Bormașină Bosch</h4>
+                <p class="price">50 RON / zi</p>
+                <p class="location">📍 București</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-img">
+                <span class="badge sale">Vânzare</span>
+                <img src="https://via.placeholder.com/250x180">
+            </div>
+            <div class="card-info">
+                <h4>Trenci ZARA</h4>
+                <p class="price">120 RON</p>
+                <p class="location">📍 Cluj</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+<section class="section-container">
+    <div class="safety-banner">
+
+        <div class="safety-content">
+            <div class="safety-icon">🛡️</div>
+
+            <div class="safety-text">
+                <strong>Siguranța ta este prioritatea noastră</strong>
+                <p>Plăți sigure, profiluri verificate și suport dedicat.</p>
+            </div>
+        </div>
+
+        <a href="#" class="learn-more">Află mai multe →</a>
+
+    </div>
+</section>
+<a href="adaunga-anunt.html" class="fab-button">
+    <span>+</span>
+</a>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        const btn = document.getElementById("catBtn");
+        const menu = document.getElementById("catMenu");
+
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            menu.classList.toggle("active");
+        });
+
+        document.addEventListener("click", () => {
+            menu.classList.remove("active");
+        });
+
+        menu.addEventListener("click", (e) => {
+            e.stopPropagation();
+        });
+
+    });
+</script>
+
+</body>
+</html>
