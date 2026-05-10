@@ -1,11 +1,12 @@
 package com.example.demo.model;
-
+import org.springframework.data.elasticsearch.annotations.Document;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
 
 @Entity
 @Table(name = "anunturi")
+@Document(indexName = "anunturi")
 @Data
 public class Anunt {
 
@@ -28,4 +29,7 @@ public class Anunt {
 
     @OneToMany(mappedBy = "anunt", cascade = CascadeType.ALL)
     private List<Review> reviews;
+    @Enumerated(EnumType.STRING)
+    private AnuntStatus status = AnuntStatus.AVAILABLE;
+
 }

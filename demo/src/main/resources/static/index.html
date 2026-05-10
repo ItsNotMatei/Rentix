@@ -7,59 +7,93 @@
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <style>
+        .payment-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0; top: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.6);
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .close-modal {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+            font-size: 30px;
+            cursor: pointer;
+            color: #666;
+        }
+        #payment-form { margin-top: 20px; }
+        #submit-button {
+            width: 100%;
+            padding: 14px;
+            background-color: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+        #submit-button:hover { background-color: #333; }
+        #submit-button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .spinner { display: none; margin-right: 10px; }
+        .hidden { display: none; }
+    </style>
 </head>
 
 <body>
 
 <header class="navbar">
     <div class="nav-container">
-
         <div class="logo">Rentix</div>
-
         <nav class="nav-links">
-
             <div class="dropdown">
                 <button class="dropdown-btn" id="catBtn">Categorii ▾</button>
-
                 <div class="dropdown-menu" id="catMenu">
-
                     <input type="text" class="dropdown-search" placeholder="Caută categorie...">
-
                     <div class="dropdown-list">
-
                         <div class="cat-group">Vehicule</div>
                         <label><input type="radio" name="cat"> Mașini</label>
                         <label><input type="radio" name="cat"> Motociclete</label>
                         <label><input type="radio" name="cat"> Biciclete</label>
-
                         <div class="cat-group">Locuințe</div>
                         <label><input type="radio" name="cat"> Apartamente</label>
                         <label><input type="radio" name="cat"> Case</label>
                         <label><input type="radio" name="cat"> Garsoniere</label>
-
                         <div class="cat-group">Utilaje</div>
                         <label><input type="radio" name="cat"> Construcții</label>
                         <label><input type="radio" name="cat"> Agricultură</label>
                         <label><input type="radio" name="cat"> Industrial</label>
-
                         <div class="cat-group">Tehnologie</div>
                         <label><input type="radio" name="cat"> Laptopuri</label>
                         <label><input type="radio" name="cat"> Telefoane</label>
                         <label><input type="radio" name="cat"> Console</label>
-
                         <div class="cat-group">Fashion</div>
                         <label><input type="radio" name="cat"> Bărbați</label>
                         <label><input type="radio" name="cat"> Femei</label>
                         <label><input type="radio" name="cat"> Încălțăminte</label>
-
                         <div class="cat-group">Hobby</div>
                         <label><input type="radio" name="cat"> Instrumente</label>
                         <label><input type="radio" name="cat"> Muzică</label>
-
                         <div class="cat-group">Media</div>
                         <label><input type="radio" name="cat"> Foto</label>
                         <label><input type="radio" name="cat"> Video</label>
-
                         <div class="cat-group">Lifestyle</div>
                         <label><input type="radio" name="cat"> Sport</label>
                         <label><input type="radio" name="cat"> Outdoor</label>
@@ -67,9 +101,7 @@
                     </div>
                 </div>
             </div>
-
             <a href="Cum-functioneaza.html">Cum funcționează</a>
-
         </nav>
 
         <div class="search-bar-nav">
@@ -79,7 +111,6 @@
         <div class="nav-right">
             <a href="#" class="nav-icon">♡ Favorite</a>
             <a href="#" class="nav-icon">✉ Mesaje</a>
-            <a href="#" class="nav-icon"></a>
             <a href="login.html" class="btn dark">Autentificare</a>
             <a href="singup.html" class="btn outline">Înregistrare</a>
         </div>
@@ -87,61 +118,13 @@
     </div>
 </header>
 
-<section class="hero">
-    <div class="hero-container">
-
-        <div class="hero-content">
-            <h1>Închiriază. Vinde. Economisește.</h1>
-            <p>Descoperă mii de produse aproape de tine.</p>
-
-            <div class="hero-tabs">
-                <button class="tab active">Toate</button>
-                <button class="tab">Închirieri</button>
-                <button class="tab">Vânzări</button>
-            </div>
-
-            <div class="hero-search">
-                <input type="text" placeholder="Caută produse, categorii..." class="input-main">
-                <input type="text" placeholder="Locație" class="input-loc">
-                <button class="btn-search">Caută</button>
-                <button class="btn-filters">⚙ Filtre</button>
-            </div>
-        </div>
-
-        <div class="hero-image">
-            <img src="https://i.imgur.com/3Z4Y5X6.png" alt="Rentix Items">
-        </div>
-
-    </div>
-</section>
-
-<section class="section-container">
-    <h3>Categorii populare</h3>
-
-    <div class="cat-grid">
-        <div class="cat-item">🚗 Vehicule</div>
-        <div class="cat-item">🏠 Locuințe</div>
-        <div class="cat-item">🏗️ Utilaje</div>
-        <div class="cat-item">💻 Tehnologie</div>
-        <div class="cat-item">👗 Haine</div>
-        <div class="cat-item">🎸 Instrumente</div>
-        <div class="cat-item">📸 Foto-Video</div>
-        <div class="cat-item">🚲 Sport</div>
-    </div>
-</section>
-
-<section class="section-container">
-    <div class="section-header">
-        <h3>Anunțuri recomandate</h3>
-        <a href="#" class="see-all">Vezi toate</a>
-    </div>
-
+<section class="section-container" style="margin-top: 40px;">
+    <h3>Anunțuri recomandate (Apasă pe unul pentru test plată)</h3>
     <div class="product-grid">
-
-        <div class="card">
+        <div class="card" onclick="openPayment(50, 'Bormașină Bosch')" style="cursor: pointer;">
             <div class="card-img">
                 <span class="badge rent">Închiriere</span>
-                <img src="https://via.placeholder.com/250x180">
+                <img src="https://via.placeholder.com/250x180?text=Bormasina">
             </div>
             <div class="card-info">
                 <h4>Bormașină Bosch</h4>
@@ -150,10 +133,10 @@
             </div>
         </div>
 
-        <div class="card">
+        <div class="card" onclick="openPayment(120, 'Trenci ZARA')" style="cursor: pointer;">
             <div class="card-img">
                 <span class="badge sale">Vânzare</span>
-                <img src="https://via.placeholder.com/250x180">
+                <img src="https://via.placeholder.com/250x180?text=Trenci">
             </div>
             <div class="card-info">
                 <h4>Trenci ZARA</h4>
@@ -161,47 +144,110 @@
                 <p class="location">📍 Cluj</p>
             </div>
         </div>
-
     </div>
 </section>
-<section class="section-container">
-    <div class="safety-banner">
 
-        <div class="safety-content">
-            <div class="safety-icon">🛡️</div>
 
-            <div class="safety-text">
-                <strong>Siguranța ta este prioritatea noastră</strong>
-                <p>Plăți sigure, profiluri verificate și suport dedicat.</p>
+<div id="payment-modal" class="payment-modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closePaymentModal()">&times;</span>
+        <h2 style="margin-top:0;">Finalizare Plată</h2>
+        <p id="payment-info" style="color: #666;"></p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
+
+        <form id="payment-form">
+            <div id="payment-element">
+                <p style="text-align:center;">Se încarcă securizat...</p>
             </div>
-        </div>
-
-        <a href="#" class="learn-more">Află mai multe →</a>
-
+            <button id="submit-button">
+                <span id="button-text">Plătește Acum</span>
+            </button>
+            <div id="payment-message" class="hidden" style="color: red; margin-top: 10px; text-align: center;"></div>
+        </form>
     </div>
-</section>
-<a href="adaunga-anunt.html" class="fab-button">
-    <span>+</span>
-</a>
+</div>
+
 <script>
+    const stripe = Stripe('\t\n' +
+        'pk_test_51TTPKdGgzKi2E9mKhgGGgw7cexHlidO28igYxlKuyrUfYZBb5tHJQZt8qhQSDfV2hdR3JUF81bMKZTzRF3BDKuCq00wHDTGdU1');
+
+    let elements;
+    const modal = document.getElementById("payment-modal");
+    const paymentMsg = document.getElementById("payment-message");
+
+    async function openPayment(amount, productName) {
+        document.getElementById("payment-info").innerText = `Produs: ${productName} | Sumă: ${amount} RON`;
+        modal.style.display = "block";
+        paymentMsg.classList.add("hidden");
+
+        try {
+
+            const response = await fetch('/api/payments/create-intent', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    amount: amount * 100,
+                    reservationId: Math.floor(Math.random() * 1000)
+                })
+            });
+
+            const { clientSecret } = await response.json();
+
+            // Configurăm elementele Stripe
+            const appearance = { theme: 'stripe' };
+            elements = stripe.elements({ appearance, clientSecret });
+
+            const paymentElementOptions = { layout: "tabs" };
+            const paymentElement = elements.create("payment", paymentElementOptions);
+
+            // Ștergem textul de "loading" și montăm elementul
+            document.getElementById("payment-element").innerHTML = "";
+            paymentElement.mount("#payment-element");
+
+        } catch (e) {
+            console.error("Eroare la inițializarea plății:", e);
+            alert("Eroare la conectarea cu serverul de plăți.");
+        }
+    }
+
+    function closePaymentModal() {
+        modal.style.display = "none";
+    }
+
+    // Gestionare submit formular
+    document.getElementById("payment-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById("submit-button");
+        btn.disabled = true;
+        btn.innerText = "Se procesează...";
+
+        const { error } = await stripe.confirmPayment({
+            elements,
+            confirmParams: {
+                // Pagina unde ajunge userul după succes
+                return_url: window.location.origin + "/success.html",
+            },
+        });
+
+        if (error) {
+            paymentMsg.classList.remove("hidden");
+            paymentMsg.innerText = error.message;
+            btn.disabled = false;
+            btn.innerText = "Plătește Acum";
+        }
+    });
+
+    // Logica dropdown categorii (păstrată din codul tău)
     document.addEventListener("DOMContentLoaded", () => {
-
-        const btn = document.getElementById("catBtn");
-        const menu = document.getElementById("catMenu");
-
-        btn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            menu.classList.toggle("active");
-        });
-
-        document.addEventListener("click", () => {
-            menu.classList.remove("active");
-        });
-
-        menu.addEventListener("click", (e) => {
-            e.stopPropagation();
-        });
-
+        const btnCat = document.getElementById("catBtn");
+        const menuCat = document.getElementById("catMenu");
+        if(btnCat) {
+            btnCat.addEventListener("click", (e) => {
+                e.stopPropagation();
+                menuCat.classList.toggle("active");
+            });
+        }
+        document.addEventListener("click", () => menuCat?.classList.remove("active"));
     });
 </script>
 

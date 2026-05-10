@@ -22,11 +22,35 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable()) // Permite cererile POST fără token
                 .authorizeHttpRequests(auth -> auth
-                        // Deschidem tot ce e legat de pagini și stiluri
-                        .requestMatchers("/", "/index.html", "/css/**", "/sites/**").permitAll()
-                        // Deschidem API-ul de înregistrare
-                        .requestMatchers("/api/auth/**").permitAll()
-                        // Doar restul cererilor (ca adăugarea de anunțuri) cer login
+                        .requestMatchers(
+                                "/",
+                                "/index.html",
+                                "/css/**",
+                                "/sites/**",
+                                "/calendar.html"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/api/auth/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/reservations/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/api/payments/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/ws/**",
+                                "/topic/**"
+                        ).permitAll()
+
+                        .requestMatchers(
+                                "/search/**"
+                        ).permitAll()
+
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
