@@ -4,117 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="3e48b56f-b45c-49ff-a5aa-039b726da4c8" name="Changes" comment="Tranzactii+Rezervari">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/frontend/frontend.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/.postman/resources.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/HELP.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/mvnw" beforeDir="false" afterPath="$PROJECT_DIR$/backend/mvnw" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/mvnw.cmd" beforeDir="false" afterPath="$PROJECT_DIR$/backend/mvnw.cmd" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/postman/globals/workspace.globals.yaml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/DemoApplication.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/DemoApplication.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/config/CloudinaryConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/CloudinaryConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/config/RateLimitFilter.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/RateLimitFilter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/config/SecurityConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/SecurityConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/config/WebSocketConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/config/WebSocketConfig.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/controller/AnuntController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/AnuntController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/controller/AuthController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/AuthController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/controller/ImagineController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/ImagineController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/controller/PaymentController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/PaymentController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/controller/ReservationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/ReservationController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/controller/ReviewController.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/controller/ReviewController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/Anunt.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/Anunt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/AnuntStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/AnuntStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/ImagineAnunt.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/ImagineAnunt.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/PaymentRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/PaymentRequest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/PaymentResponse.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/PaymentResponse.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/Reservation.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/Reservation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/ReservationStatus.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/ReservationStatus.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/Review.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/Review.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/Transaction.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/Transaction.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/model/User.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/model/User.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/repository/AnuntRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/AnuntRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/repository/ImagineRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/ImagineRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/repository/ReservationRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/ReservationRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/repository/ReviewRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/ReviewRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/repository/TransactionRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/TransactionRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/repository/UserRepository.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/repository/UserRepository.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/service/AnuntService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/AnuntService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/service/ImagineService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/ImagineService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/service/ReservationSchedulerService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/ReservationSchedulerService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/service/ReservationService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/ReservationService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/java/com/example/demo/service/ReviewService.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/java/com/example/demo/service/ReviewService.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/Cum-functioneaza.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/sites/Cum-functioneaza.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/adauga-anunt.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/adauga-anunt.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/calendar.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/calendar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/css/Cum-functioneaza.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/Cum-functioneaza.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/css/adauga.css" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/css/adauga.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/css/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/singup.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/singup.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/main/resources/static/succes.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/succes.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/src/test/java/com/example/demo/DemoApplicationTests.java" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/test/java/com/example/demo/DemoApplicationTests.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/DemoApplication.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/config/CloudinaryConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/config/RateLimitFilter.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/config/SecurityConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/config/WebSocketConfig.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/controller/AnuntController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/controller/AuthController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/controller/ImagineController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/controller/PaymentController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/controller/ReservationController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/controller/ReviewController.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/Anunt.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/AnuntStatus.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/ImagineAnunt.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/PaymentRequest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/PaymentResponse.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/Reservation.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/ReservationStatus.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/Review.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/Transaction.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/model/User.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/repository/AnuntRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/repository/ImagineRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/repository/ReservationRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/repository/ReviewRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/repository/TransactionRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/repository/UserRepository.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/service/AnuntService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/service/ImagineService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/service/ReservationSchedulerService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/service/ReservationService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/com/example/demo/service/ReviewService.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/Cum-functioneaza.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/Cum-functioneaza.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/adauga-anunt.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/adauga-anunt.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/calendar.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/calendar.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/css/Cum-functioneaza.css" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/css/Cum-functioneaza.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/css/adauga.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/adauga.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/css/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/css/style.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/singup.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/singup.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/sites/Cum-functioneaza.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/src/main/resources/static/Cum-functioneaza.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/sites/adauga-anunt.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/sites/adauga-anunt.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/sites/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/sites/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/sites/login.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/sites/login.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/sites/singup.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/sites/singup.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/classes/static/succes.html" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/classes/static/succes.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/surefire-reports/TEST-com.example.demo.DemoApplicationTests.xml" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/TEST-com.example.demo.DemoApplicationTests.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/surefire-reports/com.example.demo.DemoApplicationTests.txt" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/surefire-reports/com.example.demo.DemoApplicationTests.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/demo/target/test-classes/com/example/demo/DemoApplicationTests.class" beforeDir="false" afterPath="$PROJECT_DIR$/backend/target/test-classes/com/example/demo/DemoApplicationTests.class" afterDir="false" />
-    </list>
+    <list default="true" id="3e48b56f-b45c-49ff-a5aa-039b726da4c8" name="Changes" comment="Organizare" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -134,6 +24,7 @@
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="UPDATE_TYPE" value="REBASE" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -177,7 +68,6 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "Spring Boot.DemoApplication.executor": "Run",
     "codeWithMe.voiceChat.enabledByDefault": "false",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
@@ -226,7 +116,7 @@
       <workItem from="1778412365297" duration="9000" />
       <workItem from="1778412438259" duration="6249000" />
       <workItem from="1778428824826" duration="10143000" />
-      <workItem from="1778513561902" duration="6868000" />
+      <workItem from="1778513561902" duration="7174000" />
     </task>
     <task id="LOCAL-00001" summary="Tranzactii+Rezervari">
       <option name="closed" value="true" />
@@ -244,7 +134,15 @@
       <option name="project" value="LOCAL" />
       <updated>1778440313267</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="Organizare">
+      <option name="closed" value="true" />
+      <created>1778520923483</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1778520923483</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -276,6 +174,7 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Tranzactii+Rezervari" />
-    <option name="LAST_COMMIT_MESSAGE" value="Tranzactii+Rezervari" />
+    <MESSAGE value="Organizare" />
+    <option name="LAST_COMMIT_MESSAGE" value="Organizare" />
   </component>
 </project>
