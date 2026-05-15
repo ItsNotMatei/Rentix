@@ -1,0 +1,314 @@
+/* DESIGN PAGINĂ DETALII PRODUS */
+.product-details-container {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Inter', sans-serif;
+}
+
+.product-main-layout {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 40px;
+    align-items: start;
+}
+
+/* Galerie Imagine Stânga */
+.main-image-wrapper {
+    position: relative;
+    width: 100%;
+    height: 500px;
+    background: #f8fafc;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+.main-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.product-type-badge {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 6px 14px;
+    border-radius: 30px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.badge-vanzare { background: #10b981; }      /* Verde pentru Vânzare */
+.badge-inchiriere { background: #0ea5e9; }    /* Albastru pentru Închiriere */
+
+/* Coloana Dreaptă: Informații */
+.product-header-box {
+    margin-bottom: 24px;
+}
+
+.header-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.product-category-tag {
+    font-size: 13px;
+    font-weight: 600;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 4px 10px;
+    border-radius: 6px;
+}
+
+.action-buttons-group {
+    display: flex;
+    gap: 10px;
+}
+
+.circle-action-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.circle-action-btn:hover {
+    background: #f8fafc;
+    color: #1e293b;
+}
+
+.product-main-title {
+    font-size: 28px;
+    font-weight: 800;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+}
+
+.product-rating-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.star-rating {
+    color: #f97316;
+    font-weight: 700;
+}
+
+.location-tag {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+}
+
+.product-description-box {
+    border-top: 1px solid #f1f5f9;
+    padding-top: 20px;
+    margin-bottom: 24px;
+}
+
+.product-description-box h3 {
+    font-size: 16px;
+    color: #1e293b;
+    margin: 0 0 10px 0;
+}
+
+.product-description-box p {
+    color: #475569;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* CASETA DE TRANZACȚIE (SIDEBAR CARD) */
+.transaction-action-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+    margin-bottom: 24px;
+}
+
+.price-display-row {
+    margin-bottom: 20px;
+}
+
+.main-price-number {
+    font-size: 32px;
+    font-weight: 900;
+    color: #1e293b;
+}
+
+.price-type-text {
+    font-size: 16px;
+    color: #64748b;
+    font-weight: 600;
+}
+
+/* Butoane acțiune */
+.primary-action-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 12px;
+}
+
+.buy-now-btn { background: #10b981; color: white; }
+.buy-now-btn:hover { background: #059669; }
+
+.rent-now-btn { background: #0ea5e9; color: white; }
+.rent-now-btn:hover { background: #0284c7; }
+
+.secondary-action-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.secondary-action-btn:hover { background: #f8fafc; }
+
+/* Picker Calendar Stil */
+.picker-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.picker-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.picker-field label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.picker-field input {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-family: inherit;
+    font-size: 13px;
+    color: #334155;
+}
+
+.hours-disclaimer, .product-status-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+
+.buyer-protection-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-top: 1px solid #f1f5f9;
+    padding-top: 16px;
+    margin-top: 16px;
+}
+
+.buyer-protection-box p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+    font-weight: 500;
+}
+
+/* Caseta Profil Proprietar */
+.owner-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fafc;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #f1f5f9;
+}
+
+.owner-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #334155;
+}
+
+.owner-meta {
+    flex: 1;
+}
+
+.owner-meta h4 {
+    margin: 0 0 2px 0;
+    font-size: 15px;
+    color: #1e293b;
+}
+
+.owner-meta p {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.chat-contact-btn {
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chat-contact-btn:hover { background: #f1f5f9; }
+
+@media (max-width: 768px) {
+    .product-main-layout { grid-template-columns: 1fr; }
+    .main-image-wrapper { height: 320px; }
+}

@@ -1,0 +1,156 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import '../css/adauga.css';
+
+export default function AdaugaAnunt() {
+    const [titlu, setTitlu] = useState('');
+    const [pret, setPret] = useState('');
+    const [descriere, setDescriere] = useState('');
+    const [adresa, setAdresa] = useState('');
+    const [tip, setTip] = useState('Închiriere'); // Schimbat default pe Închiriere conform specificului platformei
+    const [imagine, setImagine] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [user, setUser] = useState(null);
+    const navigate = useNavigate();
+
+    // --- PROTECȚIE ȘI VERIFICARE BULETIN ---
+    useEffect(() => {
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+
+            // Dacă utilizatorul nu are statusul isVerified setat pe true, îl blocăm
+            if (!parsedUser.isVerified) {
+                alert("Trebuie să îți verifici identitatea cu buletinul în pagina de Profil înainte de a putea posta un anunț!");
+                navigate('/profile?tab=cont');
+            }
+        } else {
+            // Dacă nu este logat deloc, îl trimitem la login
+            navigate('/login');
+        }
+    }, [navigate]);
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImagine(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!titlu || !pret || !adresa) {
+            alert("Titlul, prețul și locația sunt obligatorii!");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('titlu', titlu);
+        formData.append('pret', parseFloat(pret));
+        formData.append('descriere', descriere);
+        formData.append('adresa', adresa);
+        formData.append('tip', tip);
+        formData.append('userId', user ? user.id : 2);
+        formData.append('status', 'AVAILABLE'); // Trimitem explicit string-ul mapat de @Enumerated(EnumType.STRING) din Java
+
+        if (imagine) {
+            formData.append('imagine', imagine);
+        }
+
+        try {
+            const response = await fetch("http://localhost:8080/api/products", {
+                method: "POST",
+                body: formData // Browserul își setează automat multipart/form-data
+            });
+
+            if (response.ok) {
+                localStorage.removeItem("anunturi");
+                alert("Anunțul a fost publicat cu succes!");
+                navigate('/'); // Redirecționare automată pe pagina principală
+            } else {
+                const errorText = await response.text();
+                alert("Eroare de la server: " + errorText);
+            }
+        } catch (error) {
+            console.error("Eroare la conectare:", error);
+            alert("Eroare la salvarea în baza de date. Verifică dacă serverul Java este pornit.");
+        }
+    };
+
+    return (
+        <div className="adauga-anunt-container">
+            <h2>Adaugă un anunț nou</h2>
+            <form onSubmit={handleSubmit} className="adauga-form">
+
+                <div className="form-group">
+                    <label>Încarcă fotografie din dispozitiv:</label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileChange}
+                        className="file-input"
+                    />
+
+                    {previewUrl && (
+                        <div className="image-preview">
+                            <p>Previzualizare fotografie:</p>
+                            <img src={previewUrl} alt="Preview" style={{ maxWidth: '200px', borderRadius: '8px', marginTop: '10px' }} />
+                        </div>
+                    )}
+                </div>
+
+                <div className="form-group">
+                    <label>Titlu anunț:</label>
+                    <input
+                        type="text"
+                        value={titlu}
+                        onChange={(e) => setTitlu(e.target.value)}
+                        placeholder="Ex: Stander moto profesional / Hanorac Balenciaga"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Descriere:</label>
+                    <textarea
+                        value={descriere}
+                        onChange={(e) => setDescriere(e.target.value)}
+                        placeholder="Oferă detalii despre produs, starea lui și condiții..."
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Adresă / Locație:</label>
+                    <input
+                        type="text"
+                        value={adresa}
+                        onChange={(e) => setAdresa(e.target.value)}
+                        placeholder="Ex: Valea Adâncă, RO"
+                    />
+                </div>
+
+                <div className="form-group">
+                    <label>Tip anunț:</label>
+                    <select value={tip} onChange={(e) => setTip(e.target.value)}>
+                        <option value="Închiriere">Închiriere</option>
+                        <option value="Vânzare">Vânzare</option>
+                    </select>
+                </div>
+
+                <div className="form-group">
+                    <label>Preț total (RON / zi):</label>
+                    <input
+                        type="number"
+                        value={pret}
+                        onChange={(e) => setPret(e.target.value)}
+                        placeholder="0.00"
+                    />
+                </div>
+
+                <button type="submit" className="submit-btn">Publică anunțul</button>
+            </form>
+        </div>
+    );
+}

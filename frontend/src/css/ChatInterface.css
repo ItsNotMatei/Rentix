@@ -1,0 +1,149 @@
+.ig-chat-container {
+    display: flex;
+    height: 600px;
+    background: #fff;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.ig-chat-sidebar {
+    width: 350px;
+    border-right: 1px solid #dbdbdb;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 20px;
+    border-bottom: 1px solid #dbdbdb;
+    text-align: center;
+    font-weight: bold;
+}
+
+.conv-item {
+    display: flex;
+    padding: 15px;
+    gap: 12px;
+    cursor: pointer;
+    align-items: center;
+}
+
+.conv-item.active {
+    background-color: #efefef;
+}
+
+.avatar {
+    width: 56px;
+    height: 56px;
+    background: #ccc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Chat Main */
+.ig-chat-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #dbdbdb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.messages-area {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Bulele de Mesaj stil IG */
+.msg-wrapper {
+    display: flex;
+    width: 100%;
+}
+
+.msg-wrapper.mine { justify-content: flex-end; }
+.msg-wrapper.theirs { justify-content: flex-start; }
+
+.msg-bubble {
+    max-width: 70%;
+    padding: 8px 16px;
+    border-radius: 22px;
+    font-size: 14px;
+}
+
+.mine .msg-bubble {
+    background-color: #3797f0;
+    color: white;
+}
+
+.theirs .msg-bubble {
+    background-color: #efefef;
+    color: #262626;
+    border: 1px solid #dbdbdb;
+}
+
+/* Input */
+.chat-input-container {
+    padding: 20px;
+}
+
+.input-wrapper {
+    border: 1px solid #dbdbdb;
+    border-radius: 22px;
+    padding: 10px 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.input-wrapper input {
+    flex: 1;
+    border: none;
+    outline: none;
+}
+
+.input-wrapper button {
+    background: none;
+    border: none;
+    color: #0095f6;
+    font-weight: bold;
+    cursor: pointer;
+    opacity: 0.5;
+}
+
+.input-wrapper button.active {
+    opacity: 1;
+}
+.msg-wrapper.mine {
+    justify-content: flex-end;
+}
+
+.mine .msg-bubble {
+    background-color: #0095f6; /* Albastru Instagram */
+    color: white;
+    border-bottom-right-radius: 4px;
+}
+
+/* Mesajele LUI (Stânga - Gri) */
+.msg-wrapper.theirs {
+    justify-content: flex-start;
+}
+
+.theirs .msg-bubble {
+    background-color: #efefef; /* Gri deschis */
+    color: #262626;
+    border-bottom-left-radius: 4px;
+}

@@ -1,0 +1,12 @@
+# Ignoră setările editorului (văzut în imaginea ta)
+.idea/
+.vscode/
+
+# Ignoră dependențele de Node.js (sunt enorme și blochează Git-ul!)
+node_modules/
+
+# Ignoră fișierele mari sau temporare încărcate de utilizatori
+uploads/
+dist/
+build/
+.env
