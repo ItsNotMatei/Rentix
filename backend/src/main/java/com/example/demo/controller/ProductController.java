@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Product;
 import com.example.demo.model.ImagineAnunt;
+import com.example.demo.model.Anunt; // Asigură-te că importul ăsta există
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ImagineRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +24,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/products")
-@CrossOrigin(origins = "http://localhost:5173") // Meciul perfect cu portul tău din Vite/React
+@CrossOrigin(origins = "http://localhost:5173")
 public class ProductController {
 
     @Autowired
@@ -44,15 +45,11 @@ public class ProductController {
             @RequestParam(value = "imagine", required = false) MultipartFile file) {
 
         try {
-            // Pasul A: Salvăm datele text în tabela 'anunturi'
             Product product = new Product();
             product.setTitlu(titlu);
             product.setDescriere(descriere);
             product.setAdresa(adresa);
             product.setTip(tip);
-
-            // CORECTARE EROARE: Schimbat din "valabil" în "AVAILABLE" sau valoarea trimisă din formular
-            // pentru a se potrivi perfect cu structura coloanei de tip Enum/String din baza de date
             product.setStatus("AVAILABLE");
             product.setUserId(userId);
 
@@ -62,26 +59,27 @@ public class ProductController {
                 product.setPret(0.0);
             }
 
-            // Salvarea generează ID-ul automat în MySQL
             Product savedProduct = productRepository.save(product);
 
-            // Pasul B: Dacă utilizatorul a selectat o imagine din dispozitiv, o salvăm fizic
             if (file != null && !file.isEmpty()) {
                 String uploadDir = "uploads/";
                 File directory = new File(uploadDir);
                 if (!directory.exists()) {
-                    directory.mkdirs(); // Creează folderul fizic 'uploads' dacă nu există
+                    directory.mkdirs();
                 }
 
-                // Generăm un nume unic fișierului pentru a evita suprascrierea pe disc
                 String uniqueFileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
                 Path path = Paths.get(uploadDir + uniqueFileName);
                 Files.write(path, file.getBytes());
 
-                // Pasul C: Salvăm legătura în tabela 'imagine_anunt' folosind modelul tău 'ImagineAnunt'
+                // REPARARE AICI: În loc de setAnuntId, creăm un obiect "Anunt" fals,
+                // îi setăm ID-ul salvat de la produs și îl trimitem către imagineAnunt.
+                Anunt anuntDummy = new Anunt();
+                anuntDummy.setId(savedProduct.getId());
+
                 ImagineAnunt imagineAnunt = new ImagineAnunt();
-                imagineAnunt.setAnuntId(savedProduct.getId());
                 imagineAnunt.setUrl("http://localhost:8080/uploads/" + uniqueFileName);
+                imagineAnunt.setAnunt(anuntDummy); // Folosim relația de tip obiect!
 
                 imagineRepository.save(imagineAnunt);
             }
@@ -95,13 +93,12 @@ public class ProductController {
         }
     }
 
-    // 2. RETURNAREA PRODUSELOR CU TOT CU POZĂ PENTRU PAGINA HOME (Stil E-commerce)
+    // 2. RETURNAREA PRODUSELOR CU TOT CU POZĂ PENTRU PAGINA HOME
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getAllProducts() {
         List<Product> products = productRepository.findAll();
         List<Map<String, Object>> response = new ArrayList<>();
 
-        // Preluăm toate imaginile o singură dată din DB pentru a optimiza performanța
         List<ImagineAnunt> toateImaginile = imagineRepository.findAll();
 
         for (Product p : products) {
@@ -114,19 +111,16 @@ public class ProductController {
             productMap.put("tip", p.getTip());
             productMap.put("status", p.getStatus());
             productMap.put("userId", p.getUserId());
-
-            // Mapăm o listă goală de recenzii dacă nu sunt încă definite, pentru ca Home.jsx (reviews.length) să nu dea crash
             productMap.put("reviews", new ArrayList<>());
 
-            // Căutăm URL-ul imaginii asociate produsului curent
+            // REPARARE AICI: În loc de i.getAnuntId(), trecem prin i.getAnunt().getId()
             Optional<ImagineAnunt> img = toateImaginile.stream()
-                    .filter(i -> i.getAnuntId() != null && i.getAnuntId().equals(p.getId()))
+                    .filter(i -> i.getAnunt() != null && i.getAnunt().getId().equals(p.getId()))
                     .findFirst();
 
             if (img.isPresent()) {
                 productMap.put("imageUrl", img.get().getUrl());
             } else {
-                // Imagine modernă tip placeholder din Unsplash dacă nu există poză încărcată
                 productMap.put("imageUrl", "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?q=80&w=600");
             }
 
@@ -155,8 +149,9 @@ public class ProductController {
         productMap.put("userId", p.getUserId());
         productMap.put("reviews", new ArrayList<>());
 
+        // REPARARE AICI: În loc de i.getAnuntId(), trecem prin i.getAnunt().getId()
         Optional<ImagineAnunt> img = imagineRepository.findAll().stream()
-                .filter(i -> i.getAnuntId() != null && i.getAnuntId().equals(p.getId()))
+                .filter(i -> i.getAnunt() != null && i.getAnunt().getId().equals(p.getId()))
                 .findFirst();
 
         if (img.isPresent()) {

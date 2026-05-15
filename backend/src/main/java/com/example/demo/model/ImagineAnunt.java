@@ -12,8 +12,8 @@ public class ImagineAnunt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "anunt_id")
-    private Long anuntId;
-
     private String url;
+    @ManyToOne
+    @JoinColumn(name = "anunt_id", nullable = false)
+    private Anunt anunt;
 }
