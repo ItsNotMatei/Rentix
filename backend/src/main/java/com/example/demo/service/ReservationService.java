@@ -59,7 +59,6 @@ public class ReservationService {
                 res.setStatus(ReservationStatus.ACTIVE);
                 reservationRepository.save(res);
             }
-            // Dacă ai starea COMPLETED în enum, lasă așa. Dacă nu, schimbă cu ce ai (ex: FINALIZATA)
             else if (res.getStatus() == ReservationStatus.ACTIVE && today.isAfter(res.getEndDate())) {
                 res.setStatus(ReservationStatus.COMPLETED);
                 reservationRepository.save(res);

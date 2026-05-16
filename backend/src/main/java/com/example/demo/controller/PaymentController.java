@@ -23,19 +23,18 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/payments")
 @RequiredArgsConstructor
-@CrossOrigin("*")
 public class PaymentController {
 
     private final TransactionRepository transactionRepository;
     private final ReservationService reservationService;
     private final UserRepository userRepository;
-
-    @Value("sk_test_51TTPKdGgzKi2E9mKjCv4A7X6gDdPaGt7Bz7uyfj3glzRRNOZSg1FuqvC8m1lQUwAqWGAfHTaGHoseAgBYzxxwbh100z30a8rU9")
-    private String stripeSecretKey;
+    private final com.example.demo.config.StripeProperties stripeProperties;
 
     @PostConstruct
     public void init() {
-        Stripe.apiKey = stripeSecretKey;
+        if (stripeProperties.getSecretKey() != null && !stripeProperties.getSecretKey().isBlank()) {
+            Stripe.apiKey = stripeProperties.getSecretKey();
+        }
     }
 
     // =========================================================================

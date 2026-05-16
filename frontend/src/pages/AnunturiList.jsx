@@ -17,11 +17,9 @@ const AnunturiList = () => {
         const fetchAnunturi = async () => {
             setLoading(true);
             try {
-                let url = 'http://localhost:8080/api/anunturi';
-
-                // Dacă utilizatorul a căutat ceva, schimbăm endpoint-ul către cel de search
+                let url = 'http://localhost:8080/api/products';
                 if (searchTerm.trim() !== '') {
-                    url = `http://localhost:8080/api/anunturi/search?query=${encodeURIComponent(searchTerm)}`;
+                    url = `http://localhost:8080/api/products/search?query=${encodeURIComponent(searchTerm)}`;
                 }
 
                 const res = await axios.get(url);
@@ -96,8 +94,8 @@ const AnunturiList = () => {
                         >
                             {/* Imagine sau Placeholder */}
                             <div style={{ width: '100%', height: '180px', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
-                                {anunt.imagineUrl ? (
-                                    <img src={anunt.imagineUrl} alt={anunt.titlu} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                {(anunt.imageUrl || anunt.imagineUrl) ? (
+                                    <img src={anunt.imageUrl || anunt.imagineUrl} alt={anunt.titlu} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
                                     <Package size={40} />
                                 )}

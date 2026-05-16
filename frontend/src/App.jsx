@@ -6,11 +6,15 @@ import AdaugaAnunt from './pages/AdaugaAnunt';
 import CalendarPage from './pages/CalendarPage';
 import CumFunctioneaza from './pages/CumFunctioneaza';
 import Profile from './pages/Profile';
-import ChatInterface from './pages/ChatInterface.jsx';
 import ProductDetails from "./pages/ProductDetails.jsx";
 import AnunturiList from "./pages/AnunturiList.jsx";
 import Chat from "./pages/Chat.jsx";
 import Checkout from "./pages/Checkout.jsx";
+import CheckoutSuccess from "./pages/CheckoutSuccess.jsx";
+import AdminDashboard from "./pages/AdminDashboard.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import AdminRoute from "./components/AdminRoute.jsx";
+
 function App() {
     return (
         <Router>
@@ -21,15 +25,17 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
-                <Route path="/adauga" element={<AdaugaAnunt />} />
+                <Route path="/adauga" element={<ProtectedRoute><AdaugaAnunt /></ProtectedRoute>} />
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/cum-functioneaza" element={<CumFunctioneaza />} />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/chat" element={<ChatInterface />} />
+                <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+                <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/anunturi" element={<AnunturiList />} />
-                <Route path="/chat" element={<Chat />} />
-                <Route path="/checkout/:id" element={<Checkout />} /> {/* Pagina ta de plată Stripe */}
+                <Route path="/checkout/:id" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
+                <Route path="/checkout/cancel" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
             </Routes>
             </div>
         </Router>

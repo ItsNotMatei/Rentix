@@ -7,7 +7,7 @@ const CalendarPage = () => {
     const [events, setEvents] = useState([]);
 
     const loadCalendar = async () => {
-        const response = await fetch(`/api/reservations/availability/${anuntId}`);
+        const response = await fetch(`http://localhost:8080/reservations/availability/${anuntId}`);
         const dates = await response.json();
         const formattedEvents = dates.map(date => ({
             title: 'Reserved',

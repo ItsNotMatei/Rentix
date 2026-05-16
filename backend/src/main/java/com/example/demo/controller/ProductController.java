@@ -1,26 +1,21 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Product;
+import com.example.demo.model.Anunt;
 import com.example.demo.model.ImagineAnunt;
-import com.example.demo.model.Anunt; // Asigură-te că importul ăsta există
-import com.example.demo.repository.ProductRepository;
+import com.example.demo.model.Product;
+import com.example.demo.model.User;
+import com.example.demo.model.UserRole;
 import com.example.demo.repository.ImagineRepository;
+import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.UserRepository;
+import com.example.demo.security.SecurityUtils;
+import com.example.demo.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/products")
@@ -33,17 +28,25 @@ public class ProductController {
     @Autowired
     private ImagineRepository imagineRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ReviewService reviewService;
+
+    private static final String FALLBACK_IMAGE =
+            "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?q=80&w=600";
+
     @PostMapping
     public ResponseEntity<?> createProduct(@RequestBody Map<String, Object> payload) {
         try {
-            // Extragem datele din JSON-ul trimis de React
             String titlu = (String) payload.get("titlu");
             String descriere = (String) payload.get("descriere");
             String adresa = (String) payload.get("adresa");
             String tip = (String) payload.get("tip");
             String status = (String) payload.get("status");
-            Long userId = payload.get("userId") != null ? Long.valueOf(payload.get("userId").toString()) : 2L;
-            String imagineUrl = (String) payload.get("imagineUrl"); // Link-ul primit de la Cloudinary
+            Long userId = SecurityUtils.currentUserId();
+            String imagineUrl = (String) payload.get("imagineUrl");
 
             Double pret;
             try {
@@ -52,7 +55,6 @@ public class ProductController {
                 pret = 0.0;
             }
 
-            // Construim și salvăm produsul
             Product product = new Product();
             product.setTitlu(titlu);
             product.setDescriere(descriere);
@@ -64,71 +66,76 @@ public class ProductController {
 
             Product savedProduct = productRepository.save(product);
 
-            // Dacă React a încărcat cu succes o imagine în Cloudinary, o salvăm în tabelă
             if (imagineUrl != null && !imagineUrl.trim().isEmpty()) {
                 Anunt anuntDummy = new Anunt();
                 anuntDummy.setId(savedProduct.getId());
 
                 ImagineAnunt imagineAnunt = new ImagineAnunt();
-                imagineAnunt.setUrl(imagineUrl); // Salvăm direct URL-ul securizat de Cloudinary (https://res.cloudinary.com/...)
+                imagineAnunt.setUrl(imagineUrl);
                 imagineAnunt.setAnunt(anuntDummy);
-
                 imagineRepository.save(imagineAnunt);
             }
 
             return ResponseEntity.ok(savedProduct);
-
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Eroare la scrierea în baza de date MySQL: " + e.getMessage());
         }
     }
 
-
-    // 2. RETURNAREA PRODUSELOR CU TOT CU POZĂ PENTRU PAGINA HOME
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getAllProducts() {
         List<Product> products = productRepository.findAll();
-        List<Map<String, Object>> response = new ArrayList<>();
-
-        List<ImagineAnunt> toateImaginile = imagineRepository.findAll();
-
-        for (Product p : products) {
-            Map<String, Object> productMap = new HashMap<>();
-            productMap.put("id", p.getId());
-            productMap.put("titlu", p.getTitlu());
-            productMap.put("pret", p.getPret());
-            productMap.put("descriere", p.getDescriere());
-            productMap.put("adresa", p.getAdresa());
-            productMap.put("tip", p.getTip());
-            productMap.put("status", p.getStatus());
-            productMap.put("userId", p.getUserId());
-            productMap.put("reviews", new ArrayList<>());
-
-            // REPARARE AICI: În loc de i.getAnuntId(), trecem prin i.getAnunt().getId()
-            Optional<ImagineAnunt> img = toateImaginile.stream()
-                    .filter(i -> i.getAnunt() != null && i.getAnunt().getId().equals(p.getId()))
-                    .findFirst();
-
-            if (img.isPresent()) {
-                productMap.put("imageUrl", img.get().getUrl());
-            } else {
-                productMap.put("imageUrl", "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?q=80&w=600");
-            }
-
-            response.add(productMap);
-        }
-        return ResponseEntity.ok(response);
+        List<ImagineAnunt> images = imagineRepository.findAll();
+        return ResponseEntity.ok(products.stream()
+                .map(p -> toProductMap(p, images))
+                .collect(Collectors.toList()));
     }
 
-    // 3. RETURNAREA UNUI SINGUR PRODUS PENTRU PAGINA DE DETALII
+    @GetMapping("/search")
+    public ResponseEntity<List<Map<String, Object>>> search(@RequestParam String query) {
+        String q = query == null ? "" : query.trim().toLowerCase();
+        if (q.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        List<ImagineAnunt> images = imagineRepository.findAll();
+        List<Map<String, Object>> results = productRepository.findAll().stream()
+                .filter(p -> contains(p.getTitlu(), q) || contains(p.getDescriere(), q) || contains(p.getAdresa(), q))
+                .map(p -> toProductMap(p, images))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(results);
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<?> getProductById(@PathVariable Long id) {
         Optional<Product> productOpt = productRepository.findById(id);
         if (productOpt.isEmpty()) {
             return ResponseEntity.status(404).body("Produsul nu a fost găsit în baza de date.");
         }
+        return ResponseEntity.ok(toProductMap(productOpt.get(), imagineRepository.findAll()));
+    }
 
-        Product p = productOpt.get();
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        Optional<Product> productOpt = productRepository.findById(id);
+        if (productOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Product product = productOpt.get();
+        Long currentId = SecurityUtils.currentUserId();
+        UserRole role = SecurityUtils.currentRole();
+        boolean isOwner = product.getUserId() != null && product.getUserId().equals(currentId);
+        if (!isOwner && !role.isAtLeast(UserRole.MODERATOR)) {
+            return ResponseEntity.status(403).body("Nu ai permisiunea să ștergi acest anunț.");
+        }
+        productRepository.deleteById(id);
+        return ResponseEntity.ok("Anunț șters.");
+    }
+
+    private boolean contains(String value, String query) {
+        return value != null && value.toLowerCase().contains(query);
+    }
+
+    private Map<String, Object> toProductMap(Product p, List<ImagineAnunt> images) {
         Map<String, Object> productMap = new HashMap<>();
         productMap.put("id", p.getId());
         productMap.put("titlu", p.getTitlu());
@@ -138,19 +145,31 @@ public class ProductController {
         productMap.put("tip", p.getTip());
         productMap.put("status", p.getStatus());
         productMap.put("userId", p.getUserId());
-        productMap.put("reviews", new ArrayList<>());
 
-        // REPARARE AICI: În loc de i.getAnuntId(), trecem prin i.getAnunt().getId()
-        Optional<ImagineAnunt> img = imagineRepository.findAll().stream()
+        Optional<ImagineAnunt> img = images.stream()
                 .filter(i -> i.getAnunt() != null && i.getAnunt().getId().equals(p.getId()))
                 .findFirst();
+        productMap.put("imageUrl", img.map(ImagineAnunt::getUrl).orElse(FALLBACK_IMAGE));
 
-        if (img.isPresent()) {
-            productMap.put("imageUrl", img.get().getUrl());
-        } else {
-            productMap.put("imageUrl", "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?q=80&w=600");
-        }
+        User owner = p.getUserId() != null ? userRepository.findById(p.getUserId()).orElse(null) : null;
+        String ownerName = owner != null && owner.getNume() != null && !owner.getNume().isBlank()
+                ? owner.getNume()
+                : "Proprietar";
+        productMap.put("ownerName", ownerName);
+        productMap.put("ownerVerified", owner != null && owner.isVerified());
 
-        return ResponseEntity.ok(productMap);
+        Map<String, Object> userObj = new HashMap<>();
+        userObj.put("id", p.getUserId());
+        userObj.put("nume", ownerName);
+        userObj.put("isVerified", owner != null && owner.isVerified());
+        userObj.put("verified", owner != null && owner.isVerified());
+        productMap.put("user", userObj);
+
+        Map<String, Object> stats = reviewService.getReviewStats(p.getId());
+        productMap.put("averageRating", stats.get("averageRating"));
+        productMap.put("reviewCount", stats.get("reviewCount"));
+        productMap.put("reviews", reviewService.getReviews(p.getId()));
+
+        return productMap;
     }
 }

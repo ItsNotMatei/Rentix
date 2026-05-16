@@ -47,12 +47,19 @@ public class AnuntController {
         return ResponseEntity.ok(rezultate);
     }
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteAnunt(@PathVariable Long id, Authentication auth) {
-        String email = auth.getName();
-        User user = userRepository.findByEmail(email).orElseThrow();
+    public ResponseEntity<?> deleteAnunt(
+            @PathVariable Long id,
+            @RequestParam(required = false) Long adminUserId,
+            Authentication auth
+    ) {
+        User user = null;
+        if (adminUserId != null) {
+            user = userRepository.findById(adminUserId).orElse(null);
+        } else if (auth != null && auth.getName() != null) {
+            user = userRepository.findByEmail(auth.getName()).orElse(null);
+        }
 
-        // Verificăm dacă cel care șterge este ADMIN
-        if ("ADMIN".equals(user.getRole())) {
+        if (user != null && "ADMIN".equals(user.getRole())) {
             anuntRepository.deleteById(id);
             return ResponseEntity.ok("Anunț șters de administrator.");
         }

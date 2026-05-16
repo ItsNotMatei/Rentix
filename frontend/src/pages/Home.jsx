@@ -14,6 +14,7 @@ import {
     CheckCircle // Am adăugat bifa pentru utilizator verificat
 } from "lucide-react";
 import axios from 'axios';
+import api, { hasRole } from '../services/api';
 
 export default function Home() {
     const [user, setUser] = useState(null);
@@ -35,7 +36,7 @@ export default function Home() {
 
             try {
                 // Încercăm să luăm datele din API-ul tău existent
-                const response = await fetch("http://localhost:8080/api/anunturi");
+                const response = await fetch("http://localhost:8080/api/products");
                 if (response.ok) {
                     const data = await response.json();
                     setAnunturi(data);
@@ -58,7 +59,7 @@ export default function Home() {
         e.stopPropagation(); // Oprim navigarea către detalii când apăsăm pe șterge
         if (window.confirm("Ești sigur că vrei să ștergi acest anunț ca Admin?")) {
             try {
-                await axios.delete(`http://localhost:8080/api/anunturi/${id}`);
+                await api.delete(`/api/products/${id}`);
                 setAnunturi(anunturi.filter(a => a.id !== id));
                 alert("Anunțul a fost eliminat.");
             } catch (err) {
@@ -88,7 +89,7 @@ export default function Home() {
 
         const delayFetch = setTimeout(async () => {
             try {
-                const res = await axios.get(`http://localhost:8080/api/anunturi/search?query=${encodeURIComponent(query)}`);
+                const res = await axios.get(`http://localhost:8080/api/products/search?query=${encodeURIComponent(query)}`);
                 setSuggestions(res.data.slice(0, 5));
                 setShowDropdown(true);
             } catch (err) {
@@ -178,10 +179,15 @@ export default function Home() {
                     </div>
 
                     <div className="navbar-actions">
-                        <Link to="/profile?tab=chat" className="nav-action-icon"><MessageCircle size={22} /></Link>
+                        <Link to="/chat" className="nav-action-icon"><MessageCircle size={22} /></Link>
+                        {hasRole('MODERATOR') && (
+                            <Link to="/admin" className="nav-action-icon" title="Admin Panel">Admin</Link>
+                        )}
                         {user ? (
                             <div className="logged-user-wrapper" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                                <Link to="/profile" className="welcome-user-text" style={{ textDecoration: 'none', color: 'inherit' }}>{user.nume}</Link>
+                                <Link to="/profile" className="welcome-user-text" style={{ textDecoration: 'none', color: 'inherit' }}>
+                                    {user.nume || user.email?.split('@')[0] || 'Contul meu'}
+                                </Link>
                                 {/* BIFĂ BULETIN NAVBAR */}
                                 {user?.isVerified && (
                                     <CheckCircle size={15} color="#0284c7" fill="#e0f2fe" style={{ marginLeft: '-2px' }} title="Utilizator Verificat cu Buletinul" />

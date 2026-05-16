@@ -1,59 +1,64 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.*;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.demo.security.SecurityUtils;
+import com.example.demo.service.AuthService;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:5173")
+@RequiredArgsConstructor
 public class AuthController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private final AuthService authService;
+    private final UserRepository userRepository;
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
     @PostMapping("/signup")
-    public String signup(@RequestBody User user) {
-        System.out.println("Cerere signup pentru: " + user.getEmail());
-        // Verificăm dacă user-ul există deja (opțional, dar recomandat)
-        if(userRepository.findByEmail(user.getEmail()).isPresent()) {
-            return "Eroare: Email-ul este deja folosit!";
-        }
-
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
-        return "Cont creat cu succes!";
+    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
+        return ResponseEntity.ok(authService.signup(request));
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<?> signin(@RequestBody User loginDetails) {
-        System.out.println("Cerere login pentru email: " + loginDetails.getEmail());
-
-        return userRepository.findByEmail(loginDetails.getEmail())
-                .map(user -> {
-                    // Verificăm dacă parola din DB se potrivește cu cea primită
-                    if (passwordEncoder.matches(loginDetails.getPassword(), user.getPassword())) {
-                        // Returnăm tot obiectul user (care conține și câmpul 'nume')
-                        return ResponseEntity.ok(user);
-                    } else {
-                        return ResponseEntity.status(401).body("Parolă incorectă!");
-                    }
-                })
-                .orElse(ResponseEntity.status(404).body("Utilizator negăsit!"));
+    public ResponseEntity<AuthResponse> signin(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.login(request));
     }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+        return ResponseEntity.ok(authService.refresh(request.getRefreshToken()));
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@RequestBody(required = false) RefreshTokenRequest request) {
+        if (request != null && request.getRefreshToken() != null) {
+            authService.logout(request.getRefreshToken());
+        }
+        return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserPublicDto> me() {
+        return ResponseEntity.ok(authService.me());
+    }
+
     @PutMapping("/update/{id}")
-    public ResponseEntity<?> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+    public ResponseEntity<UserPublicDto> updateUser(@PathVariable Long id, @RequestBody User userDetails) {
+        Long currentId = SecurityUtils.currentUserId();
+        if (!currentId.equals(id) && !SecurityUtils.currentRole().isAtLeast(com.example.demo.model.UserRole.ADMIN)) {
+            throw new org.springframework.security.access.AccessDeniedException("Nu poți edita acest profil.");
+        }
         return userRepository.findById(id).map(user -> {
-            user.setNume(userDetails.getNume());
-            if(userDetails.getProfilePic() != null) user.setProfilePic(userDetails.getProfilePic());
-            userRepository.save(user);
-            return ResponseEntity.ok(user);
+            if (userDetails.getNume() != null) user.setNume(userDetails.getNume());
+            if (userDetails.getProfilePic() != null) user.setProfilePic(userDetails.getProfilePic());
+            if (userDetails.getTelefon() != null) user.setTelefon(userDetails.getTelefon());
+            if (userDetails.getAdresa() != null) user.setAdresa(userDetails.getAdresa());
+            User saved = userRepository.save(user);
+            return ResponseEntity.ok(AuthResponse.toPublic(saved));
         }).orElse(ResponseEntity.notFound().build());
     }
-
 }

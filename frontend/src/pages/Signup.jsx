@@ -13,7 +13,6 @@ const Signup = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            // Legătura cu backend-ul prin serviciul tău
             await authService.register(userData.username, userData.email, userData.password);
             alert("Cont creat cu succes! Te poți loga.");
             navigate('/login');

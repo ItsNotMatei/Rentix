@@ -26,8 +26,30 @@ public class User {
     @Column(name = "is_verified")
     private boolean isVerified = false;
 
+    @Column(name = "verification_status", length = 20)
+    private String verificationStatus = "PENDING";
+
+    @Column(name = "verified_at")
+    private java.time.LocalDateTime verifiedAt;
+
+    @Column(name = "verification_provider", length = 50)
+    private String verificationProvider;
+
     private String stripeCustomerId;
+    @Column(nullable = false, length = 30)
     private String role = "USER";
+
+    @Column(nullable = false)
+    private boolean banned = false;
+
+    @Column(nullable = false)
+    private boolean suspended = false;
+
+    private java.time.LocalDateTime suspendedUntil;
+
+    @Column(length = 500)
+    private String banReason;
+
     private String nume;
     private String profilePic;
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

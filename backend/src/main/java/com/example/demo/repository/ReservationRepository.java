@@ -30,4 +30,10 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     );
 
     List<Reservation> findByAnuntId(Long anuntId);
+
+    boolean existsByUser_IdAndAnunt_IdAndStatus(
+            Long userId,
+            Long anuntId,
+            com.example.demo.model.ReservationStatus status
+    );
 }

@@ -1,26 +1,43 @@
 import axios from 'axios';
+import api, { clearSession } from './api';
 
-const API_URL = "http://localhost:8080/api/auth/";
+const AUTH_URL = 'http://localhost:8080/api/auth/';
+
+const persistSession = (data) => {
+    localStorage.setItem('accessToken', data.accessToken);
+    localStorage.setItem('refreshToken', data.refreshToken);
+    localStorage.setItem('user', JSON.stringify(data.user));
+};
 
 const register = (username, email, password) => {
-    return axios.post(API_URL + "signup", {
-        username,
+    return axios.post(AUTH_URL + 'signup', {
+        nume: username,
         email,
         password
     });
 };
 
-const login = (email, password) => {
+const login = async (email, password) => {
+    const response = await axios.post(AUTH_URL + 'signin', { email, password });
+    persistSession(response.data);
+    return response.data.user;
+};
 
-    return axios.post(API_URL + "signin", {
-        email,
-        password
-    }).then((response) => {
-        if (response.data.accessToken) {
-            localStorage.setItem("user", JSON.stringify(response.data));
+const logout = async () => {
+    const refreshToken = localStorage.getItem('refreshToken');
+    try {
+        if (refreshToken) {
+            await api.post('/api/auth/logout', { refreshToken });
         }
-        return response.data;
-    });
+    } finally {
+        clearSession();
+    }
 };
 
-export default { register, login };
+const me = async () => {
+    const response = await api.get('/api/auth/me');
+    localStorage.setItem('user', JSON.stringify(response.data));
+    return response.data;
+};
+
+export default { register, login, logout, me, persistSession };

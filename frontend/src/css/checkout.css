@@ -1,0 +1,205 @@
+/* --- CONTAINER PRINCIPAL --- */
+.checkout-container {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #1e293b;
+}
+
+.checkout-container h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    color: #0f172a;
+    border-bottom: 2px solid #f1f5f9;
+    padding-bottom: 15px;
+}
+
+/* --- STRUCTURA PE DOUĂ COLOANE --- */
+.checkout-layout {
+    display: grid;
+    grid-template-columns: 1.5fr  1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* --- COLOANA STÂNGĂ: FORMULARUL DE PLATĂ --- */
+.checkout-payment-section {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.checkout-payment-section h3 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #475569;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.form-group input:focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+/* Stil pentru caseta specială de card Stripe (CardElement) */
+.stripe-card-wrapper {
+    padding: 14px 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background-color: #f8fafc;
+}
+
+/* --- COLOANA DREAPTĂ: REZUMATUL COMANDEI --- */
+.checkout-summary-sidebar {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 25px;
+    position: sticky;
+    top: 20px;
+}
+
+.checkout-summary-sidebar h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #0f172a;
+}
+
+/* Detalii mini-produs */
+.mini-product-card {
+    display: flex;
+    gap: 15px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 20px;
+}
+
+.mini-product-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.mini-product-info h4 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+    color: #1e293b;
+}
+
+.mini-product-info .mini-price {
+    font-weight: 700;
+    color: #0d9488;
+}
+
+/* Calcul tabelar prețuri (Taxe, Protecție, Total) */
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #64748b;
+}
+
+.price-row.total-row {
+    border-top: 1px dashed #cbd5e1;
+    margin-top: 15px;
+    padding-top: 15px;
+    font-size: 18px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.price-row.total-row .total-price {
+    color: #0d9488;
+}
+
+/* --- ELEMENTE DE SIGURANȚĂ ȘI BUTON --- */
+.buyer-protection-info {
+    display: flex;
+    gap: 10px;
+    background: #f0fdfa;
+    border: 1px solid #ccfbf1;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: #115e59;
+    line-height: 1.4;
+}
+
+.btn-pay-now {
+    width: 100%;
+    background: #0d9488;
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-pay-now:hover {
+    background: #0f766e;
+}
+
+.btn-pay-now:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+/* Stări de încărcare / eroare globale */
+.loading-spinner, .error-message {
+    text-align: center;
+    padding: 50px;
+    font-size: 16px;
+    color: #64748b;
+}
+
+/* --- ADAPTARE RESPONSIVE PENTRU MOBIL --- */
+@media (max-width: 768px) {
+    .checkout-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .checkout-summary-sidebar {
+        position: static;
+    }
+}

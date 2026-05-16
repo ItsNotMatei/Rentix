@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios'; // Folosim axios pentru un cod mai curat la upload
+import axios from 'axios';
+import api from '../services/api';
 import '../css/adauga.css';
 
 export default function AdaugaAnunt() {
@@ -96,21 +97,14 @@ export default function AdaugaAnunt() {
 
         try {
             // Trimitem datele ca aplicație/json simplă, fără FormData complicat
-            const response = await fetch("http://localhost:8080/api/products", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(listingData)
-            });
+            const response = await api.post("/api/products", listingData);
 
-            if (response.ok) {
+            if (response.status >= 200 && response.status < 300) {
                 localStorage.removeItem("anunturi");
                 alert("Anunțul a fost publicat cu succes!");
                 navigate('/');
             } else {
-                const errorText = await response.text();
-                alert("Eroare de la server: " + errorText);
+                alert("Eroare de la server.");
             }
         } catch (error) {
             console.error("Eroare la conectare:", error);

@@ -1,0 +1,319 @@
+.rentix-chat-page {
+    min-height: 100vh;
+    background: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+}
+
+.rentix-chat-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.rentix-chat-header h1 {
+    margin: 0;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-back-link {
+    color: #0d9488;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.chat-unread-badge {
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.75rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+}
+
+.rentix-chat-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    flex: 1;
+    min-height: calc(100vh - 64px);
+}
+
+.chat-sidebar {
+    background: #fff;
+    border-right: 1px solid #e2e8f0;
+    overflow-y: auto;
+}
+
+.chat-conv-item {
+    width: 100%;
+    text-align: left;
+    border: none;
+    background: transparent;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f1f5f9;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-conv-item.active,
+.chat-conv-item:hover {
+    background: #f0fdfa;
+}
+
+.chat-conv-main {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.chat-conv-listing {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.chat-conv-preview {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chat-conv-unread {
+    background: #0d9488;
+    color: #fff;
+    border-radius: 999px;
+    min-width: 22px;
+    height: 22px;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-main-panel {
+    display: flex;
+    flex-direction: column;
+    background: #111e25;
+    color: #fff;
+}
+
+.chat-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 18px;
+    background: #1a2d37;
+    border-bottom: 1px solid #2d4350;
+}
+
+.chat-online-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22c55e;
+}
+
+.chat-placeholder,
+.chat-loading,
+.chat-empty {
+    padding: 24px;
+    color: #64748b;
+}
+
+.chat-typing {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 0 12px;
+}
+
+@media (max-width: 768px) {
+    .rentix-chat-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .chat-sidebar {
+        max-height: 40vh;
+    }
+}
+
+.chat-window-container {
+    max-width: 600px;
+    margin: 20px auto;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    height: 80vh;
+    background: #111e25; /* Fundal închis la culoare ca în screenshot */
+    color: #fff;
+}
+
+.negotiation-header {
+    background: #1a2d37;
+    padding: 15px;
+    border-bottom: 1px solid #2d4350;
+    text-align: center;
+}
+
+.negotiation-actions button {
+    margin: 5px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-accept { background: #3b90a6; color: #fff; width: 80%; font-weight: bold; }
+.btn-decline { background: #243845; color: #aaa; }
+.btn-counter { background: transparent; border: 1px solid #3b90a6 !important; color: #3b90a6; }
+
+.chat-messages-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.message-row { display: flex; width: 100%; }
+.message-row.me { justify-content: flex-end; }
+.message-row.other { justify-content: flex-start; }
+
+.message-bubble {
+    max-width: 70%;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+.me .message-bubble { background: #203440; color: #fff; }
+.other .message-bubble { background: #18252d; color: #ddd; }
+
+.chat-input-footer {
+    display: flex;
+    padding: 10px;
+    background: #1a2d37;
+}
+.chat-input-footer input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    background: #243845;
+    color: white;
+}
+
+.offer-card {
+    background: #1a2d37;
+    border: 1px solid #2d4350;
+    border-radius: 12px;
+    padding: 14px;
+    min-width: 220px;
+    max-width: 320px;
+}
+
+.offer-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.offer-amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #5eead4;
+}
+
+.offer-status-badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: #243845;
+}
+
+.offer-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.offer-card-actions button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.btn-accept { background: #0d9488; color: #fff; }
+.btn-reject { background: #475569; color: #fff; }
+.btn-counter { background: transparent; border: 1px solid #0d9488 !important; color: #5eead4; }
+.btn-pay { background: #0284c7; color: #fff; width: 100%; }
+
+.chat-system-msg {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    font-style: italic;
+    padding: 8px;
+}
+
+.chat-image-msg {
+    max-width: 240px;
+    border-radius: 12px;
+}
+
+.offer-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.offer-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    width: min(400px, 92vw);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+}
+
+.offer-modal input {
+    width: 100%;
+    padding: 12px;
+    margin: 12px 0;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+.offer-modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.offer-modal-actions button[type="submit"] {
+    background: #0d9488;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+}

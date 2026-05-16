@@ -12,11 +12,13 @@ const Login = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await authService.login(loginData.email, loginData.password);
-
-            localStorage.setItem("user", JSON.stringify(response));
-
-            navigate('/');
+            const user = await authService.login(loginData.email, loginData.password);
+            const roles = ['MODERATOR', 'ADMIN', 'SUPER_ADMIN'];
+            if (roles.includes(user?.role)) {
+                navigate('/admin');
+            } else {
+                navigate('/');
+            }
         } catch (error) {
             console.error(error);
             alert("Email sau parolă greșită!");

@@ -1,148 +1,117 @@
-body {
-    background: #eef1f1;
-    font-family: Arial, sans-serif;
-}
-
-.upload-page {
-    width: 100%;
+.adauga-anunt-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 32px 20px 80px;
     min-height: 100vh;
-    padding: 40px 0;
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-.upload-container {
-    width: 70%;
-    margin: auto;
+.adauga-anunt-container h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin-bottom: 24px;
 }
 
-.upload-container h1 {
-    margin-bottom: 25px;
-    font-size: 32px;
-}
-
-.form-card {
-    background: white;
-    padding: 25px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
-
-.form-group {
+.adauga-form {
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+    border: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 18px;
 }
 
-.form-group label {
-    font-weight: bold;
-    font-size: 15px;
+.adauga-form .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.form-group input,
-.form-group textarea,
-.form-group select {
-    padding: 14px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 15px;
+.adauga-form label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #334155;
 }
 
-.form-group textarea {
+.adauga-form input,
+.adauga-form textarea,
+.adauga-form select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+
+.adauga-form input:focus,
+.adauga-form textarea:focus,
+.adauga-form select:focus {
+    outline: none;
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
+}
+
+.adauga-form textarea {
     min-height: 120px;
-    resize: none;
+    resize: vertical;
 }
 
-.image-upload {
-    background: white;
-    padding: 40px;
-    border-radius: 10px;
-    margin-bottom: 20px;
+.adauga-form .file-input {
+    padding: 10px;
+    background: #f8fafc;
+    border-style: dashed;
+    border-color: #0d9488;
+    cursor: pointer;
 }
 
-.image-upload input {
+.image-preview {
+    margin-top: 8px;
+}
+
+.image-preview img {
     width: 100%;
-    padding: 15px;
-    border: 2px dashed #00b3ad;
-    border-radius: 10px;
-}
-
-.type-options {
-    display: flex;
-    gap: 15px;
-}
-
-.type-options button {
-    padding: 12px 25px;
-    border: none;
-    border-radius: 10px;
-    background: #eee;
-    cursor: pointer;
-    font-size: 15px;
-}
-
-.type-options button.active {
-    background: #00b3ad;
-    color: white;
-}
-
-.publish-btn {
-    width: 100%;
-    padding: 16px;
-    border: none;
-    border-radius: 10px;
-    background: #00b3ad;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-
-.publish-btn:hover {
-    background: #009591;
-}
-.upload-box {
-    border: 2px dashed #00b3ad;
-    padding: 40px;
-    border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-    background: #fafafa;
-    transition: 0.3s;
-}
-
-.upload-box:hover {
-    background: #f1f1f1;
-}
-
-.upload-box span {
-    color: #00b3ad;
-    font-size: 18px;
-    font-weight: bold;
-}
-
-.preview-image {
-    width: 250px;
-    margin-top: 20px;
+    max-width: 280px;
+    height: auto;
     border-radius: 12px;
     object-fit: cover;
-}
-.product-info {
-    padding: 0 15px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    border: 1px solid #e2e8f0;
 }
 
-.product-author {
-    color: #6b7280;
-    font-size: 14px;
+.submit-btn {
+    margin-top: 8px;
+    padding: 14px 20px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.15s;
 }
 
-.product-type {
-    background: #0f766e;
-    color: white;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 12px;
+.submit-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+.submit-btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+}
+
+@media (max-width: 640px) {
+    .adauga-anunt-container {
+        padding: 20px 16px 60px;
+    }
+
+    .adauga-form {
+        padding: 20px 16px;
+    }
 }

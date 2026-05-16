@@ -4,8 +4,9 @@ import { User, MessageCircle, Package, Heart, Star, Shield, LogOut, CheckCircle,
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import axios from 'axios';
+import authService from '../services/authService';
+import api from '../services/api';
 import '../css/profile.css';
-import ChatInterface from './ChatInterface';
 
 const Profile = () => {
     const location = useLocation();
@@ -34,7 +35,7 @@ const Profile = () => {
     const stompClient = useRef(null);
 
     // --- EVALUARE FLEXIBILĂ PROPRIETATE VERIFICARE (Sincronizare completă cu MySQL tinyint/boolean) ---
-    const esteVerificat = user?.isVerified === true || user?.isVerified === 1 || user?.verified === true || user?.verified === 1 || true;
+    const esteVerificat = user?.isVerified === true || user?.isVerified === 1 || user?.verified === true || user?.verified === 1;
 
     // --- 1. VERIFICARE SUCCES STRIPE SUBSCRIPTION ÎN URL ---
     useEffect(() => {
@@ -55,7 +56,7 @@ const Profile = () => {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('verification') === 'success' && user?.id) {
-            axios.post(`http://localhost:8080/api/identity/verify-success/${user.id}`)
+            api.post(`/api/identity/webhook-verified`, { sessionId: urlParams.get('session_id') })
                 .then(res => {
                     // Măsură de siguranță: Ne asigurăm că ambele posibile denumiri (isVerified și verified) devin true în local storage
                     const updatedUser = {
@@ -95,8 +96,8 @@ const Profile = () => {
         setSearchParams({ tab: tabName });
     };
 
-    const handleLogout = () => {
-        localStorage.removeItem("user");
+    const handleLogout = async () => {
+        await authService.logout();
         navigate('/');
         window.location.reload();
     };
@@ -175,7 +176,7 @@ const Profile = () => {
         }
         setVerifying(true);
         try {
-            const response = await axios.post(`http://localhost:8080/api/identity/create-session/${userId}`);
+            const response = await api.post(`/api/identity/create-session`);
 
             if (response.data && response.data.url) {
                 console.log("Redirecționare către Stripe Identity...", response.data.url);
@@ -197,13 +198,13 @@ const Profile = () => {
             case 'chat':
                 return (
                     <div className="tab-content-fade">
-                        <ChatInterface
-                            messages={messages}
-                            connected={connected}
-                            inputValue={inputValue}
-                            setInputValue={setInputValue}
-                            sendMessage={handleSendMessage}
-                        />
+                        <h2 className="tab-section-title">Mesaje</h2>
+                        <p style={{ color: '#64748b', marginBottom: '16px' }}>
+                            Deschide conversațiile cu alți utilizatori din pagina unui anunț sau din centrul de mesaje.
+                        </p>
+                        <Link to="/chat" className="auth-submit-btn" style={{ display: 'inline-flex', width: 'auto', textDecoration: 'none' }}>
+                            Deschide mesajele
+                        </Link>
                     </div>
                 );
             case 'comenzi':

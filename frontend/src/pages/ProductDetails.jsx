@@ -4,6 +4,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Heart, Share2, MapPin, Calendar, Clock, ShieldCheck, MessageSquare, Tag } from 'lucide-react';
 import { GoogleMap, Marker, useLoadScript } from '@react-google-maps/api';
 import '../css/Details.css';
+import api from '../services/api';
+import { buyNow } from '../services/paymentService';
+import MakeOfferModal from '../components/MakeOfferModal';
 
 export default function ProductDetails() {
     const { id } = useParams();
@@ -21,6 +24,8 @@ export default function ProductDetails() {
     // Stări noi adăugate (Favorite, Booking & Google Maps)
     const [isFavorite, setIsFavorite] = useState(false);
     const [bookingError, setBookingError] = useState('');
+    const [showOfferModal, setShowOfferModal] = useState(false);
+    const [buyLoading, setBuyLoading] = useState(false);
 
     const { isLoaded } = useLoadScript({
         googleMapsApiKey: 'GOOGLE_API_KEY' // Înlocuiește cu cheia ta reală de la Google
@@ -92,67 +97,86 @@ export default function ProductDetails() {
 
     // 7. Funcția pentru trimiterea unei recenzii noi
     const handleReview = async () => {
-        await fetch(`http://localhost:8080/api/reviews/${id}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                rating,
-                comment
-            })
-        });
-
+        const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (!storedUser?.id) {
+            alert('Trebuie să fii autentificat pentru a lăsa o recenzie.');
+            navigate('/login');
+            return;
+        }
+        try {
+            await api.post(`/api/reviews/${id}`, { rating, comment });
+        } catch (err) {
+            alert(err.response?.data?.message || 'Nu s-a putut salva recenzia.');
+            return;
+        }
         setComment('');
         fetchReviews();
+        const productRes = await fetch(`http://localhost:8080/api/products/${id}`);
+        if (productRes.ok) setProduct(await productRes.json());
     };
 
     // 8. Funcția pentru realizarea unei rezervări (Închiriere)
     const handleBooking = async () => {
         try {
-            setBookingError(''); // Resetăm eroarea din trecut la o nouă încercare
-            const response = await fetch('http://localhost:8080/api/bookings', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    productId: id,
-                    startDate,
-                    endDate
-                })
-            });
-
-            if (!response.ok) {
-                const error = await response.text();
-                setBookingError(error);
+            setBookingError('');
+            const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+            if (!storedUser?.id) {
+                navigate('/login');
                 return;
             }
-
+            if (!startDate || !endDate) {
+                setBookingError('Selectează perioada de închiriere.');
+                return;
+            }
+            const params = new URLSearchParams({
+                anuntId: id,
+                userId: storedUser.id,
+                startDate,
+                endDate
+            });
+            const response = await api.post(`/reservations?${params}`);
+            if (response.status < 200 || response.status >= 300) {
+                setBookingError('Perioada selectată nu este disponibilă.');
+                return;
+            }
             alert('Rezervare realizată cu succes');
-
         } catch (error) {
             console.error(error);
+            setBookingError('Eroare la rezervare. Verifică serverul.');
         }
     };
 
     // Redirecționare simplă pentru cumpărare directă
-    const handleCumparaAcum = () => {
-        navigate(`/checkout/${product.id}`);
+    const handleCumparaAcum = async () => {
+        setBuyLoading(true);
+        try {
+            const res = await buyNow(product.id);
+            if (res.url) window.location.href = res.url;
+        } catch (err) {
+            alert(err.response?.data?.message || 'Nu s-a putut iniția plata.');
+        } finally {
+            setBuyLoading(false);
+        }
     };
 
     const handleDeschideChat = () => {
         navigate(`/chat?cuUtilizator=${product.userId || 2}&produs=${product.id}`);
     };
 
+    const handleFaOferta = () => setShowOfferModal(true);
+
     if (loading) return <div className="loading-spinner">Se încarcă detaliile produsului...</div>;
     if (!product) return <div className="error-message">Produsul nu a fost găsit în baza de date.</div>;
 
-    const esteVanzare = product.tip && product.tip.toLowerCase().includes('vânzare' || 'vanzare');
+    const tipLower = (product.tip || '').toLowerCase();
+    const esteVanzare = tipLower.includes('vânzare') || tipLower.includes('vanzare');
     const areRecenzii = product.reviews && product.reviews.length > 0;
 
     return (
         <div className="product-details-container">
+            {showOfferModal && (
+                <MakeOfferModal product={product} onClose={() => setShowOfferModal(false)} />
+            )}
             {/* Secțiunea Superioară: Galerie Imagini & Informații principale */}
             <div className="product-main-layout">
 
@@ -203,8 +227,8 @@ export default function ProductDetails() {
                         <h1 className="product-main-title">{product.titlu}</h1>
 
                         <div className="product-rating-row">
-                            <span className="star-rating">★ 5.0</span>
-                            <span className="reviews-count">({areRecenzii ? product.reviews.length : 0} recenzii)</span>
+                            <span className="star-rating">★ {product.averageRating || 0}</span>
+                            <span className="reviews-count">({product.reviewCount ?? (areRecenzii ? product.reviews.length : 0)} recenzii)</span>
                             <span className="location-tag"><MapPin size={14} /> {product.adresa || "România"}</span>
                         </div>
                     </div>
@@ -251,10 +275,10 @@ export default function ProductDetails() {
                                     <Tag size={16} /> <span>Stare: <strong>Foarte bună</strong></span>
                                 </div>
 
-                                <button className="primary-action-btn buy-now-btn" onClick={handleCumparaAcum}>
-                                    Cumpără acum
+                                <button className="primary-action-btn buy-now-btn" onClick={handleCumparaAcum} disabled={buyLoading}>
+                                    {buyLoading ? 'Se redirecționează...' : 'Cumpără acum'}
                                 </button>
-                                <button className="secondary-action-btn offer-btn" onClick={handleDeschideChat}>
+                                <button className="secondary-action-btn offer-btn" onClick={handleFaOferta}>
                                     Fă o ofertă
                                 </button>
                             </div>
