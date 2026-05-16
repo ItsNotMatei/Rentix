@@ -90,6 +90,12 @@
     color: #1e293b;
 }
 
+/* Stare activă pentru butonul de favorite */
+.active-favorite {
+    background: rgba(239, 68, 68, 0.1); /* Roșu discret pe fundal */
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
 .product-main-title {
     font-size: 28px;
     font-weight: 800;
@@ -134,6 +140,19 @@
     font-size: 15px;
     line-height: 1.6;
     margin: 0;
+}
+
+/* Stiluri pentru Secțiunea Hartă Google */
+.product-map-box h3 {
+    font-size: 16px;
+    color: #1e293b;
+    margin: 0 0 12px 0;
+}
+
+.map-loading-placeholder {
+    font-size: 14px;
+    color: #64748b;
+    font-weight: 500;
 }
 
 /* CASETA DE TRANZACȚIE (SIDEBAR CARD) */
@@ -228,6 +247,13 @@
     color: #334155;
 }
 
+.booking-error {
+    color: #dc2626;
+    margin-top: 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
 .hours-disclaimer, .product-status-info {
     display: flex;
     align-items: center;
@@ -308,6 +334,100 @@
 
 .chat-contact-btn:hover { background: #f1f5f9; }
 
+/* SECȚIUNEA DE RECENZII */
+.reviews-section {
+    margin-top: 40px;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 30px;
+}
+
+.reviews-section h2 {
+    font-size: 20px;
+    color: #1e293b;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.add-review-box {
+    background: #f8fafc;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.add-review-box select {
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    max-width: 120px;
+    font-family: inherit;
+    font-weight: 600;
+}
+
+.add-review-box textarea {
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    font-family: inherit;
+    min-height: 80px;
+    resize: vertical;
+}
+
+.add-review-box button {
+    align-self: flex-start;
+    padding: 10px 20px;
+    background: #1e293b;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.add-review-box button:hover {
+    background: #0f172a;
+}
+
+.review-card {
+    background: white;
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 16px;
+    border: 1px solid #e2e8f0;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.review-header span {
+    color: #f97316;
+    font-weight: 700;
+}
+
+/* INTERFAȚĂ CHAT SIMPLĂ / ELEMENTE FALLBACK */
+.chat-box {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.message-item {
+    background: #f1f5f9;
+    padding: 10px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+/* RESPONSIVITATE */
 @media (max-width: 768px) {
     .product-main-layout { grid-template-columns: 1fr; }
     .main-image-wrapper { height: 320px; }

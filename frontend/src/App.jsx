@@ -9,7 +9,8 @@ import Profile from './pages/Profile';
 import ChatInterface from './pages/ChatInterface.jsx';
 import ProductDetails from "./pages/ProductDetails.jsx";
 import AnunturiList from "./pages/AnunturiList.jsx";
-
+import Chat from "./pages/Chat.jsx";
+import Checkout from "./pages/Checkout.jsx";
 function App() {
     return (
         <Router>
@@ -27,6 +28,8 @@ function App() {
                 <Route path="/chat" element={<ChatInterface />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/anunturi" element={<AnunturiList />} />
+                <Route path="/chat" element={<Chat />} />
+                <Route path="/checkout/:id" element={<Checkout />} /> {/* Pagina ta de plată Stripe */}
             </Routes>
             </div>
         </Router>

@@ -33,65 +33,56 @@ public class ProductController {
     @Autowired
     private ImagineRepository imagineRepository;
 
-    // 1. SALVAREA ANUNTULUI SI A IMAGINII DIN DISPOZITIV
     @PostMapping
-    public ResponseEntity<?> createProduct(
-            @RequestParam("titlu") String titlu,
-            @RequestParam("pret") String pretStr,
-            @RequestParam("descriere") String descriere,
-            @RequestParam("adresa") String adresa,
-            @RequestParam("tip") String tip,
-            @RequestParam("userId") Long userId,
-            @RequestParam(value = "imagine", required = false) MultipartFile file) {
-
+    public ResponseEntity<?> createProduct(@RequestBody Map<String, Object> payload) {
         try {
+            // Extragem datele din JSON-ul trimis de React
+            String titlu = (String) payload.get("titlu");
+            String descriere = (String) payload.get("descriere");
+            String adresa = (String) payload.get("adresa");
+            String tip = (String) payload.get("tip");
+            String status = (String) payload.get("status");
+            Long userId = payload.get("userId") != null ? Long.valueOf(payload.get("userId").toString()) : 2L;
+            String imagineUrl = (String) payload.get("imagineUrl"); // Link-ul primit de la Cloudinary
+
+            Double pret;
+            try {
+                pret = Double.parseDouble(payload.get("pret").toString());
+            } catch (Exception e) {
+                pret = 0.0;
+            }
+
+            // Construim și salvăm produsul
             Product product = new Product();
             product.setTitlu(titlu);
             product.setDescriere(descriere);
             product.setAdresa(adresa);
             product.setTip(tip);
-            product.setStatus("AVAILABLE");
+            product.setStatus(status != null ? status : "AVAILABLE");
             product.setUserId(userId);
-
-            try {
-                product.setPret(Double.parseDouble(pretStr));
-            } catch (Exception e) {
-                product.setPret(0.0);
-            }
+            product.setPret(pret);
 
             Product savedProduct = productRepository.save(product);
 
-            if (file != null && !file.isEmpty()) {
-                String uploadDir = "uploads/";
-                File directory = new File(uploadDir);
-                if (!directory.exists()) {
-                    directory.mkdirs();
-                }
-
-                String uniqueFileName = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
-                Path path = Paths.get(uploadDir + uniqueFileName);
-                Files.write(path, file.getBytes());
-
-                // REPARARE AICI: În loc de setAnuntId, creăm un obiect "Anunt" fals,
-                // îi setăm ID-ul salvat de la produs și îl trimitem către imagineAnunt.
+            // Dacă React a încărcat cu succes o imagine în Cloudinary, o salvăm în tabelă
+            if (imagineUrl != null && !imagineUrl.trim().isEmpty()) {
                 Anunt anuntDummy = new Anunt();
                 anuntDummy.setId(savedProduct.getId());
 
                 ImagineAnunt imagineAnunt = new ImagineAnunt();
-                imagineAnunt.setUrl("http://localhost:8080/uploads/" + uniqueFileName);
-                imagineAnunt.setAnunt(anuntDummy); // Folosim relația de tip obiect!
+                imagineAnunt.setUrl(imagineUrl); // Salvăm direct URL-ul securizat de Cloudinary (https://res.cloudinary.com/...)
+                imagineAnunt.setAnunt(anuntDummy);
 
                 imagineRepository.save(imagineAnunt);
             }
 
             return ResponseEntity.ok(savedProduct);
 
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body("Eroare la salvarea fișierului pe disc: " + e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Eroare la scrierea în baza de date MySQL: " + e.getMessage());
         }
     }
+
 
     // 2. RETURNAREA PRODUSELOR CU TOT CU POZĂ PENTRU PAGINA HOME
     @GetMapping

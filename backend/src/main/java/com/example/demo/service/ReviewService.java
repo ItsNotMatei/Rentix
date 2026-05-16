@@ -1,25 +1,36 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Anunt;
+import com.example.demo.model.Product;
 import com.example.demo.model.Review;
-import com.example.demo.repository.AnuntRepository;
+import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ReviewRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
+@RequiredArgsConstructor
 public class ReviewService {
 
-    private final ReviewRepository reviewRepo;
-    private final AnuntRepository anuntRepo;
+    private final ReviewRepository reviewRepository;
+    private final ProductRepository productRepository;
 
-    public ReviewService(ReviewRepository reviewRepo, AnuntRepository anuntRepo) {
-        this.reviewRepo = reviewRepo;
-        this.anuntRepo = anuntRepo;
+    public Review addReview(Long productId, Review review) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Produs inexistent"));
+
+        // Reparat: Se folosește setAnunt deoarece proprietatea din model se numește anunt
+        review.setAnunt(product);
+        review.setCreatedAt(LocalDateTime.now());
+
+        return reviewRepository.save(review);
     }
 
-    public Review addReview(Long anuntId, Review review) {
-        Anunt anunt = anuntRepo.findById(anuntId).orElseThrow();
-        review.setAnunt(anunt);
-        return reviewRepo.save(review);
+    public List<Review> getReviews(Long productId) {
+        // Asigură-te că în ReviewRepository ai definită metoda findByAnuntId(Long id)
+        // În caz că dă eroare aici, poți schimba în reviewRepository.findByAnunt_Id(productId);
+        return reviewRepository.findByAnuntId(productId);
     }
 }

@@ -1,25 +1,37 @@
 package com.example.demo.model;
 
+import com.example.demo.model.Product;
+import com.example.demo.model.User;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Table(name = "reviews")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Review {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String content;
-    private int rating;
+
+    private Integer rating;
+
+    @Column(length = 1000)
+    private String comment;
+
+    private LocalDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "target_user_id")
-    private User targetUser; // Userul care primește recenzia
+    @JoinColumn(name = "anunt_id")
+    private Product anunt;
 
     @ManyToOne
-    @JoinColumn(name = "author_id")
-    private User author; // Userul care scrie recenzia
-    @ManyToOne
-    @JoinColumn(name = "anunt_id") // Numele coloanei în tabelul SQL
-    private Anunt anunt;
+    @JoinColumn(name = "user_id")
+    private User user;
 }

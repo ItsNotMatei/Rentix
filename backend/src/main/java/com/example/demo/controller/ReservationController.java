@@ -14,9 +14,7 @@ public class ReservationController {
 
     private final ReservationService reservationService;
 
-    public ReservationController(
-            ReservationService reservationService
-    ) {
+    public ReservationController(ReservationService reservationService) {
         this.reservationService = reservationService;
     }
 
@@ -27,7 +25,7 @@ public class ReservationController {
             @RequestParam String startDate,
             @RequestParam String endDate
     ) {
-
+        // Apelăm corect metoda cu semnătura ajustată din service
         return reservationService.createReservation(
                 anuntId,
                 userId,
@@ -35,35 +33,25 @@ public class ReservationController {
                 LocalDate.parse(endDate)
         );
     }
+
     @GetMapping("/availability/{anuntId}")
-    public List<String> getUnavailableDates(
-            @PathVariable Long anuntId
-    ) {
-
-        var reservations =
-                reservationService.getReservationsForAnunt(anuntId);
-
+    public List<String> getUnavailableDates(@PathVariable Long anuntId) {
+        var reservations = reservationService.getReservationsForAnunt(anuntId);
         List<String> dates = new ArrayList<>();
 
         for (var reservation : reservations) {
-
             LocalDate current = reservation.getStartDate();
-
             while (!current.isAfter(reservation.getEndDate())) {
-
                 dates.add(current.toString());
-
                 current = current.plusDays(1);
             }
         }
-
         return dates;
     }
+
     @PostMapping("/update-statuses")
     public String updateStatuses() {
-
         reservationService.updateStatuses();
-
         return "Statuses updated";
     }
 }

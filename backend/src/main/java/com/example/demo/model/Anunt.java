@@ -1,4 +1,5 @@
 package com.example.demo.model;
+import com.example.demo.model.Review;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;

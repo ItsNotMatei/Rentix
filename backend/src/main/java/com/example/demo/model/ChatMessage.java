@@ -1,11 +1,12 @@
 package com.example.demo.model;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ChatMessage {
-    private String senderId;
-    private String recipientId;
+    private String sender;
     private String content;
-    private String timestamp;
 }

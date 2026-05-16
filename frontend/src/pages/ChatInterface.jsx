@@ -1,11 +1,51 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Send, Info } from 'lucide-react';
+import SockJS from 'sockjs-client';
+import { Client } from '@stomp/stompjs';
 import "../css/ChatInterface.css";
 
-const ChatInterface = ({ connected, messages, sendMessage, inputValue, setInputValue }) => {
-    // Preluare sigură din localStorage
+export default function ChatInterface() {
+    // Preluare sigură din localStorage pentru utilizator
     const user = JSON.parse(localStorage.getItem("user")) || { nume: "Utilizator" };
+
+    // Stările interne pentru mesaje, input și starea conexiunii
+    const [messages, setMessages] = useState([]);
+    const [inputValue, setInputValue] = useState('');
+    const [connected, setConnected] = useState(false);
+
     const scrollRef = useRef(null);
+    const stompClientRef = useRef(null);
+
+    // Inițializare și gestionare conexiune WebSocket
+    useEffect(() => {
+        const socket = new SockJS('http://localhost:8080/chat');
+
+        const client = new Client({
+            webSocketFactory: () => socket,
+            reconnectDelay: 5000,
+            onConnect: () => {
+                setConnected(true);
+                // Subscriere la canalul de mesaje
+                client.subscribe('/topic/messages', (msg) => {
+                    const body = JSON.parse(msg.body);
+                    setMessages((prev) => [...prev, body]);
+                });
+            },
+            onDisconnect: () => {
+                setConnected(false);
+            }
+        });
+
+        client.activate();
+        stompClientRef.current = client;
+
+        // Cleanup la demontarea componentei
+        return () => {
+            if (stompClientRef.current) {
+                stompClientRef.current.deactivate();
+            }
+        };
+    }, []);
 
     // Auto-scroll optimizat la fiecare mesaj nou
     useEffect(() => {
@@ -14,7 +54,21 @@ const ChatInterface = ({ connected, messages, sendMessage, inputValue, setInputV
         }
     }, [messages]);
 
-    // Înlocuim onKeyPress cu onKeyDown (standardul modern care nu blochează interfața)
+    // Funcția de trimitere mesaj prin STOMP
+    const sendMessage = () => {
+        if (stompClientRef.current && stompClientRef.current.connected && inputValue.trim()) {
+            stompClientRef.current.publish({
+                destination: '/app/send',
+                body: JSON.stringify({
+                    senderId: user.nume, // Folosim user.nume pentru a se potrivi cu logica isMine din interfață
+                    content: inputValue.trim()
+                })
+            });
+            setInputValue('');
+        }
+    };
+
+    // Gestionare trimitere la apăsarea tastei Enter
     const handleKeyDown = (e) => {
         if (e.key === 'Enter' && inputValue.trim() && connected) {
             sendMessage();
@@ -23,6 +77,7 @@ const ChatInterface = ({ connected, messages, sendMessage, inputValue, setInputV
 
     return (
         <div className="ig-chat-container">
+            {/* SIDEBAR: Informații utilizator și listă conversații */}
             <div className="ig-chat-sidebar">
                 <div className="sidebar-header">
                     <h4>{user.nume}</h4>
@@ -40,6 +95,7 @@ const ChatInterface = ({ connected, messages, sendMessage, inputValue, setInputV
                 </div>
             </div>
 
+            {/* ZONA PRINCIPALĂ: Fereastra de chat */}
             <div className="ig-chat-main">
                 <div className="chat-header">
                     <div className="header-info">
@@ -49,8 +105,10 @@ const ChatInterface = ({ connected, messages, sendMessage, inputValue, setInputV
                     <Info size={20} className="info-icon" />
                 </div>
 
+                {/* Zona de afișare a mesajelor */}
                 <div className="messages-area" ref={scrollRef}>
                     {messages && messages.map((msg, index) => {
+                        // Verificăm dacă mesajul este trimis de utilizatorul curent
                         const isMine = msg.senderId === user.nume;
 
                         return (
@@ -68,6 +126,7 @@ const ChatInterface = ({ connected, messages, sendMessage, inputValue, setInputV
                     })}
                 </div>
 
+                {/* Zona de introducere text */}
                 <div className="chat-input-container">
                     <div className="input-wrapper">
                         <Send size={18} className="input-icon" />
@@ -91,6 +150,4 @@ const ChatInterface = ({ connected, messages, sendMessage, inputValue, setInputV
             </div>
         </div>
     );
-};
-
-export default ChatInterface;
+}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Folosim axios pentru un cod mai curat la upload
 import '../css/adauga.css';
 
 export default function AdaugaAnunt() {
@@ -7,9 +8,10 @@ export default function AdaugaAnunt() {
     const [pret, setPret] = useState('');
     const [descriere, setDescriere] = useState('');
     const [adresa, setAdresa] = useState('');
-    const [tip, setTip] = useState('Închiriere'); // Schimbat default pe Închiriere conform specificului platformei
+    const [tip, setTip] = useState('Închiriere');
     const [imagine, setImagine] = useState(null);
     const [previewUrl, setPreviewUrl] = useState('');
+    const [uploading, setUploading] = useState(false); // Stare pentru animația de încărcare
     const [user, setUser] = useState(null);
     const navigate = useNavigate();
 
@@ -20,13 +22,14 @@ export default function AdaugaAnunt() {
             const parsedUser = JSON.parse(storedUser);
             setUser(parsedUser);
 
-            // Dacă utilizatorul nu are statusul isVerified setat pe true, îl blocăm
+            // MOD DEZVOLTARE: Am comentat blocarea pentru a putea adăuga anunțuri fără buletin
+            /*
             if (!parsedUser.isVerified) {
                 alert("Trebuie să îți verifici identitatea cu buletinul în pagina de Profil înainte de a putea posta un anunț!");
                 navigate('/profile?tab=cont');
             }
+            */
         } else {
-            // Dacă nu este logat deloc, îl trimitem la login
             navigate('/login');
         }
     }, [navigate]);
@@ -39,6 +42,31 @@ export default function AdaugaAnunt() {
         }
     };
 
+    // --- FUNCȚIA DE UPLOAD ÎN CLOUDINARY ---
+    const uploadImageToCloudinary = async () => {
+        if (!imagine) return null;
+
+        const formData = new FormData();
+        formData.append("file", imagine);
+        formData.append("upload_preset", "rentix_presets"); // Înlocuiește cu numele presetului tău dacă diferă
+
+        try {
+            setUploading(true);
+            // ⚠️ ÎNLOCUIEȘTE 'numele_tau_de_cloud' cu Cloud Name-ul tău real din Cloudinary Dashboard
+            const res = await axios.post(
+                "https://api.cloudinary.com/v1_1/dn2hvsk0o/image/upload",
+                formData
+            );
+            setUploading(false);
+            return res.data.secure_url; // Returnează URL-ul securizat (https://res.cloudinary.com/...)
+        } catch (err) {
+            console.error("Eroare upload Cloudinary:", err);
+            setUploading(false);
+            alert("Nu s-a putut încărca imaginea în Cloudinary.");
+            return null;
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
@@ -47,36 +75,46 @@ export default function AdaugaAnunt() {
             return;
         }
 
-        const formData = new FormData();
-        formData.append('titlu', titlu);
-        formData.append('pret', parseFloat(pret));
-        formData.append('descriere', descriere);
-        formData.append('adresa', adresa);
-        formData.append('tip', tip);
-        formData.append('userId', user ? user.id : 2);
-        formData.append('status', 'AVAILABLE'); // Trimitem explicit string-ul mapat de @Enumerated(EnumType.STRING) din Java
-
+        // 1. Trimitem mai întâi poza în Cloudinary și așteptăm URL-ul
+        let uploadedImageUrl = "";
         if (imagine) {
-            formData.append('imagine', imagine);
+            uploadedImageUrl = await uploadImageToCloudinary();
+            if (!uploadedImageUrl) return; // Oprim procesul dacă upload-ul imaginii a eșuat
         }
 
+        // 2. Construim obiectul JSON curat pentru backend-ul Java
+        const listingData = {
+            titlu: titlu,
+            pret: parseFloat(pret),
+            descriere: descriere,
+            adresa: adresa,
+            tip: tip,
+            userId: user ? user.id : 2,
+            status: 'AVAILABLE',
+            imagineUrl: uploadedImageUrl // <--- Trimitem URL-ul primit de la Cloudinary
+        };
+
         try {
+            // Trimitem datele ca aplicație/json simplă, fără FormData complicat
             const response = await fetch("http://localhost:8080/api/products", {
                 method: "POST",
-                body: formData // Browserul își setează automat multipart/form-data
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(listingData)
             });
 
             if (response.ok) {
                 localStorage.removeItem("anunturi");
                 alert("Anunțul a fost publicat cu succes!");
-                navigate('/'); // Redirecționare automată pe pagina principală
+                navigate('/');
             } else {
                 const errorText = await response.text();
                 alert("Eroare de la server: " + errorText);
             }
         } catch (error) {
             console.error("Eroare la conectare:", error);
-            alert("Eroare la salvarea în baza de date. Verifică dacă serverul Java este pornit.");
+            alert("Eroare la salvare. Verifică dacă serverul Java este pornit.");
         }
     };
 
@@ -149,7 +187,9 @@ export default function AdaugaAnunt() {
                     />
                 </div>
 
-                <button type="submit" className="submit-btn">Publică anunțul</button>
+                <button type="submit" className="submit-btn" disabled={uploading}>
+                    {uploading ? "Se încarcă imaginea..." : "Publică anunțul"}
+                </button>
             </form>
         </div>
     );

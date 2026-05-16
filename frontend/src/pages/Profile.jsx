@@ -34,7 +34,7 @@ const Profile = () => {
     const stompClient = useRef(null);
 
     // --- EVALUARE FLEXIBILĂ PROPRIETATE VERIFICARE (Sincronizare completă cu MySQL tinyint/boolean) ---
-    const esteVerificat = user?.isVerified === true || user?.isVerified === 1 || user?.verified === true || user?.verified === 1;
+    const esteVerificat = user?.isVerified === true || user?.isVerified === 1 || user?.verified === true || user?.verified === 1 || true;
 
     // --- 1. VERIFICARE SUCCES STRIPE SUBSCRIPTION ÎN URL ---
     useEffect(() => {
@@ -346,30 +346,37 @@ const Profile = () => {
                                     </div>
 
                                     {/* --- CASETA INTEGRATĂ PENTRU VERIFICARE BULETIN --- */}
-                                    <div style={{ marginTop: '24px', padding: '18px', borderRadius: '12px', background: esteVerificat ? '#f0fdf4' : '#fff8f1', border: esteVerificat ? '1px solid #bbf7d0' : '1px solid #fed7aa' }}>
-                                        <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px', color: esteVerificat ? '#16a34a' : '#ea580c' }}>
-                                            Verificare Buletin / ID {esteVerificat && <CheckCircle size={18} color="#22c55e" fill="#e0f2fe" />}
-                                        </h4>
-                                        {esteVerificat ? (
-                                            <p style={{ color: '#16a34a', margin: 0, fontSize: '13.5px', lineHeight: '1.5' }}>
-                                                Identitatea ta a fost securizată și confirmată prin **Stripe Identity**. Ai primit insigna de încredere și poți posta anunțuri pe platformă.
-                                            </p>
-                                        ) : (
-                                            <div>
-                                                <p style={{ color: '#c2410c', margin: '0 0 12px 0', fontSize: '13.5px', lineHeight: '1.5' }}>
-                                                    Pentru a menține comunitatea Rentix sigură și family-friendly, ai nevoie de verificarea oficială a buletinului înainte de a posta prima listare.
-                                                </p>
-                                                {/* REPARAT: Trimitem explicit numărul user.id printr-un arrow function, nu tot evenimentul! */}
-                                                <button
-                                                    onClick={() => handleStartVerification(user?.id)}
-                                                    disabled={verifying}
-                                                    style={{ background: '#0d9488', color: 'white', border: 'none', padding: '9px 16px', borderRadius: '8px', cursor: verifying ? 'default' : 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-                                                >
-                                                    {verifying ? "Se inițializează..." : "Începe verificarea securizată"}
-                                                </button>
-                                            </div>
-                                        )}
-                                    </div>
+                                    {/* Cadrul de mai jos a fost comentat pentru a trece peste verificare temporar
+
+<div style={{ marginTop: '24px', padding: '18px', borderRadius: '12px', background: esteVerificat ? '#f0fdf4' : '#fff8f1', border: esteVerificat ? '1px solid #bbf7d0' : '1px solid #fed7aa' }}>
+    <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px', color: esteVerificat ? '#16a34a' : '#ea580c' }}>
+        Verificare Buletin / ID {esteVerificat && <CheckCircle size={18} color="#22c55e" fill="#e0f2fe" />}
+    </h4>
+    {esteVerificat ? (
+        <p style={{ color: '#16a34a', margin: 0, fontSize: '13.5px', lineHeight: '1.5' }}>
+            Identitatea ta a fost securizată și confirmată prin **Stripe Identity**. Ai primit insigna de încredere și poți posta anunțuri pe platformă.
+        </p>
+    ) : (
+        <div>
+            <p style={{ color: '#c2410c', margin: '0 0 12px 0', fontSize: '13.5px', lineHeight: '1.5' }}>
+                Pentru a menține comunitatea Rentix sigură și family-friendly, ai nevoie de verificarea oficială a buletinului înainte de a posta prima listare.
+            </p>
+            <button
+                onClick={() => handleStartVerification(user?.id)}
+                disabled={verifying}
+                style={{ background: '#0d9488', color: 'white', border: 'none', padding: '9px 16px', borderRadius: '8px', cursor: verifying ? 'default' : 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            >
+                {verifying ? "Se inițializează..." : "Începe verificarea securizată"}
+            </button>
+        </div>
+    )}
+</div>*/}
+<div style={{ marginTop: '24px', padding: '18px', borderRadius: '12px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
+    <p style={{ color: '#16a34a', margin: 0, fontSize: '13.5px', fontWeight: '600' }}>
+        Mod Dezvoltare: Verificarea cu buletinul este dezactivată. Poți uploada anunțuri liber!
+    </p>
+</div>
+
                                 </div>
 
                                 <div className="status-card" style={{ background: user?.pro ? 'linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%)' : '#f9fafb' }}>

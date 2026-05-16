@@ -1,4 +1,4 @@
-package com.example.demo.model; // Modifică aici cu pachetul tău real
+package com.example.demo.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -16,7 +16,7 @@ public class Product {
     private Long id;
 
     private Double pret;
-    private String titlu; // În loc de 'nume'
+    private String titlu;
     private String descriere;
     private String adresa;
     private String tip;
