@@ -3,10 +3,10 @@ import { Send, Info } from 'lucide-react';
 import SockJS from 'sockjs-client';
 import { Client } from '@stomp/stompjs';
 import "../css/ChatInterface.css";
+import { getStoredUser } from '../services/api';
 
 export default function ChatInterface() {
-    // Preluare sigură din localStorage pentru utilizator
-    const user = JSON.parse(localStorage.getItem("user")) || { nume: "Utilizator" };
+    const user = getStoredUser() || { nume: "Utilizator" };
 
     // Stările interne pentru mesaje, input și starea conexiunii
     const [messages, setMessages] = useState([]);
@@ -18,7 +18,7 @@ export default function ChatInterface() {
 
     // Inițializare și gestionare conexiune WebSocket
     useEffect(() => {
-        const socket = new SockJS('http://localhost:8080/chat');
+        const socket = new SockJS('/chat');
 
         const client = new Client({
             webSocketFactory: () => socket,

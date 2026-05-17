@@ -1,6 +1,7 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Reservation;
+import com.example.demo.security.SecurityUtils;
 import com.example.demo.service.ReservationService;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,14 +22,15 @@ public class ReservationController {
     @PostMapping
     public Reservation createReservation(
             @RequestParam Long anuntId,
-            @RequestParam Long userId,
+            @RequestParam(required = false) Long userId,
             @RequestParam String startDate,
             @RequestParam String endDate
     ) {
-        // Apelăm corect metoda cu semnătura ajustată din service
+        Long uid = userId != null ? userId : SecurityUtils.currentUserId();
+        reservationService.updateStatuses();
         return reservationService.createReservation(
                 anuntId,
-                userId,
+                uid,
                 LocalDate.parse(startDate),
                 LocalDate.parse(endDate)
         );

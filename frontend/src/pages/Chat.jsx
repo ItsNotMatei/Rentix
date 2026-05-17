@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
+import api, { ensureAuth } from '../services/api';
 import OfferCard from '../components/OfferCard';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import '../css/chat1.css';
+import AppLayout from '@/components/layout/AppLayout';
+import { API_BASE } from '@/lib/utils';
 
-const API = 'http://localhost:8080';
+const API = API_BASE;
 
 export default function Chat() {
     const [searchParams] = useSearchParams();
@@ -26,12 +28,9 @@ export default function Chat() {
     const typingTimeout = useRef(null);
 
     useEffect(() => {
-        const stored = localStorage.getItem('user');
-        if (!stored) {
-            navigate('/login');
-            return;
-        }
-        setUser(JSON.parse(stored));
+        ensureAuth()
+            .then((u) => setUser(u))
+            .catch(() => navigate('/login'));
     }, [navigate]);
 
     const loadConversations = useCallback(async (userId) => {
@@ -51,7 +50,7 @@ export default function Chat() {
         if (stompClient.current?.connected) {
             stompClient.current.disconnect();
         }
-        const socket = new SockJS(`${API}/chat`);
+        const socket = new SockJS(`${API || ''}/chat`);
         const client = Stomp.over(socket);
         client.debug = () => {};
         client.connect({}, () => {
@@ -147,7 +146,8 @@ export default function Chat() {
     if (!user) return null;
 
     return (
-        <div className="rentix-chat-page">
+        <AppLayout hideFooter>
+        <div className="rentix-chat-page container-rentix py-4">
             <header className="rentix-chat-header">
                 <Link to="/" className="chat-back-link">Acasă</Link>
                 <h1>
@@ -241,5 +241,6 @@ export default function Chat() {
                 </section>
             </div>
         </div>
+        </AppLayout>
     );
 }

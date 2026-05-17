@@ -1,80 +1,63 @@
-import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import authService from '../services/authService';
-import '../css/signup.css';
-import { User, Mail, Lock, ArrowRight } from 'lucide-react'; // Iconițe pentru un look modern
+import { useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Lock, Mail, User } from 'lucide-react'
+import AppLayout from '@/components/layout/AppLayout'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import authService from '@/services/authService'
 
-const Signup = () => {
-    const [userData, setUserData] = useState({ username: '', email: '', password: '' });
-    const [loading, setLoading] = useState(false);
-    const navigate = useNavigate();
+export default function Signup() {
+  const [userData, setUserData] = useState({ username: '', email: '', password: '' })
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
 
-    const handleSignup = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        try {
-            await authService.register(userData.username, userData.email, userData.password);
-            alert("Cont creat cu succes! Te poți loga.");
-            navigate('/login');
-        } catch (error) {
-            console.error("Eroare la signup:", error);
-            alert(error.response?.data?.message || "Ceva nu a mers bine la înregistrare.");
-        } finally {
-            setLoading(false);
-        }
-    };
+  const handleSignup = async (e) => {
+    e.preventDefault()
+    setLoading(true)
+    try {
+      await authService.register(userData.username, userData.email, userData.password)
+      alert('Cont creat cu succes! Te poți loga.')
+      navigate('/login')
+    } catch (error) {
+      alert(error.response?.data?.message || 'Eroare la înregistrare.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-    return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <div className="auth-header">
-                    <h2>Creează un cont</h2>
-                    <p>Alătură-te comunității Rentix astăzi</p>
-                </div>
-
-                <form onSubmit={handleSignup} className="auth-form">
-                    <div className="input-group">
-                        <User size={20} className="input-icon" />
-                        <input
-                            type="text"
-                            placeholder="Nume utilizator"
-                            required
-                            onChange={(e) => setUserData({...userData, username: e.target.value})}
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <Mail size={20} className="input-icon" />
-                        <input
-                            type="email"
-                            placeholder="Adresa de email"
-                            required
-                            onChange={(e) => setUserData({...userData, email: e.target.value})}
-                        />
-                    </div>
-
-                    <div className="input-group">
-                        <Lock size={20} className="input-icon" />
-                        <input
-                            type="password"
-                            placeholder="Parolă"
-                            required
-                            onChange={(e) => setUserData({...userData, password: e.target.value})}
-                        />
-                    </div>
-
-                    <button type="submit" className="auth-submit-btn" disabled={loading}>
-                        {loading ? "Se procesează..." : "Creează Cont"}
-                        {!loading && <ArrowRight size={18} />}
-                    </button>
-                </form>
-
-                <div className="auth-footer">
-                    <p>Ai deja un cont? <Link to="/login">Conectează-te</Link></p>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export default Signup;
+  return (
+    <AppLayout hideFooter>
+      <div className="container-rentix flex min-h-[70vh] items-center justify-center py-12">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Creează un cont</CardTitle>
+            <CardDescription>Alătură-te comunității Rentix</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSignup} className="space-y-4">
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+                <Input className="pl-10" placeholder="Nume" required onChange={(e) => setUserData({ ...userData, username: e.target.value })} />
+              </div>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+                <Input className="pl-10" type="email" placeholder="Email" required onChange={(e) => setUserData({ ...userData, email: e.target.value })} />
+              </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" size={18} />
+                <Input className="pl-10" type="password" placeholder="Parolă" required onChange={(e) => setUserData({ ...userData, password: e.target.value })} />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Se creează...' : 'Înregistrează-te'}
+              </Button>
+            </form>
+            <p className="mt-4 text-center text-sm text-text-muted">
+              Ai deja cont? <Link to="/login" className="font-semibold text-brand-700">Autentifică-te</Link>
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </AppLayout>
+  )
+}

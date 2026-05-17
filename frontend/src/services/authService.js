@@ -1,43 +1,37 @@
-import axios from 'axios';
-import api, { clearSession } from './api';
+import axios from 'axios'
+import api, { clearSession, setStoredUser } from './api'
+import { API_BASE } from '@/lib/utils'
+import { notifyError } from '@/lib/errors'
 
-const AUTH_URL = 'http://localhost:8080/api/auth/';
+const authApi = axios.create({
+  baseURL: API_BASE,
+  headers: { 'Content-Type': 'application/json' },
+  withCredentials: true,
+})
 
-const persistSession = (data) => {
-    localStorage.setItem('accessToken', data.accessToken);
-    localStorage.setItem('refreshToken', data.refreshToken);
-    localStorage.setItem('user', JSON.stringify(data.user));
-};
-
-const register = (username, email, password) => {
-    return axios.post(AUTH_URL + 'signup', {
-        nume: username,
-        email,
-        password
-    });
-};
+const register = (username, email, password) =>
+  authApi.post('/api/auth/signup', { nume: username, email, password })
 
 const login = async (email, password) => {
-    const response = await axios.post(AUTH_URL + 'signin', { email, password });
-    persistSession(response.data);
-    return response.data.user;
-};
+  const response = await authApi.post('/api/auth/signin', { email, password })
+  setStoredUser(response.data.user)
+  return response.data.user
+}
 
 const logout = async () => {
-    const refreshToken = localStorage.getItem('refreshToken');
-    try {
-        if (refreshToken) {
-            await api.post('/api/auth/logout', { refreshToken });
-        }
-    } finally {
-        clearSession();
-    }
-};
+  try {
+    await api.post('/api/auth/logout', {})
+  } catch {
+    /* ignore */
+  } finally {
+    clearSession()
+  }
+}
 
 const me = async () => {
-    const response = await api.get('/api/auth/me');
-    localStorage.setItem('user', JSON.stringify(response.data));
-    return response.data;
-};
+  const response = await api.get('/api/auth/me')
+  setStoredUser(response.data)
+  return response.data
+}
 
-export default { register, login, logout, me, persistSession };
+export default { register, login, logout, me }

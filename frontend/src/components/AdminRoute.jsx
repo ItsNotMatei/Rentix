@@ -1,14 +1,17 @@
-import { Navigate } from 'react-router-dom';
-import { getStoredUser, hasRole } from '../services/api';
+import { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
+import { ensureAuth, hasRole } from '@/services/api'
 
-export default function AdminRoute({ children, minRole = 'MODERATOR' }) {
-    const user = getStoredUser();
-    const token = localStorage.getItem('accessToken');
-    if (!user || !token) {
-        return <Navigate to="/login" replace />;
-    }
-    if (!hasRole(minRole)) {
-        return <Navigate to="/" replace />;
-    }
-    return children;
+export default function AdminRoute({ children }) {
+  const [state, setState] = useState('loading')
+
+  useEffect(() => {
+    ensureAuth()
+      .then(() => setState(hasRole('MODERATOR') ? 'ok' : 'denied'))
+      .catch(() => setState('denied'))
+  }, [])
+
+  if (state === 'loading') return null
+  if (state === 'denied') return <Navigate to="/" replace />
+  return children
 }

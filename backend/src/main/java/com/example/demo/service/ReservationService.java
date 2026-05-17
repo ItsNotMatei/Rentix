@@ -1,12 +1,11 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Reservation;
-import com.example.demo.model.ReservationStatus;
-import com.example.demo.model.Anunt; // SCHIMBAT DIN Product ÎN Anunt
-import com.example.demo.model.User;
+import com.example.demo.model.*;
+import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.ReservationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -17,10 +16,38 @@ public class ReservationService {
     @Autowired
     private ReservationRepository reservationRepository;
 
-    public Reservation createReservation(Long anuntId, Long userId, LocalDate startDate, LocalDate endDate) {
-        Reservation reservation = new Reservation();
+    @Autowired
+    private ProductRepository productRepository;
 
-        // REPARAT: Acum instanțiem Anunt, exact așa cum cere setAnunt()
+    @Autowired
+    private VerificationGuard verificationGuard;
+
+    @Autowired
+    private ConversationService conversationService;
+
+    @Transactional
+    public Reservation createReservation(Long anuntId, Long userId, LocalDate startDate, LocalDate endDate) {
+        verificationGuard.requireVerified(userId);
+
+        if (startDate == null || endDate == null || endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("Perioada selectată nu este validă.");
+        }
+
+        Product product = productRepository.findById(anuntId)
+                .orElseThrow(() -> new IllegalArgumentException("Anunț inexistent."));
+
+        if (product.getUserId() != null && product.getUserId().equals(userId)) {
+            throw new IllegalArgumentException("Nu poți rezerva propriul anunț.");
+        }
+
+        boolean hasConflict = reservationRepository.existsConflictingReservation(
+                anuntId, startDate, endDate
+        );
+        if (hasConflict) {
+            throw new IllegalArgumentException("Perioada selectată este deja rezervată.");
+        }
+
+        Reservation reservation = new Reservation();
         Anunt anunt = new Anunt();
         anunt.setId(anuntId);
         reservation.setAnunt(anunt);
@@ -33,17 +60,22 @@ public class ReservationService {
         reservation.setEndDate(endDate);
         reservation.setStatus(ReservationStatus.CONFIRMED);
 
-        boolean hasConflict = reservationRepository.existsConflictingReservation(
-                anuntId,
-                startDate,
-                endDate
-        );
+        Reservation saved = reservationRepository.save(reservation);
+        notifyOwner(product, userId, startDate, endDate);
+        return saved;
+    }
 
-        if (hasConflict) {
-            throw new RuntimeException("Perioada selectată este deja rezervată");
+    private void notifyOwner(Product product, Long renterId, LocalDate start, LocalDate end) {
+        if (product.getUserId() == null) return;
+        try {
+            Conversation c = conversationService.getOrCreate(product.getId(), renterId, product.getUserId());
+            String msg = String.format(
+                    "📅 Cerere rezervare: %s → %s pentru „%s”. Verifică calendarul.",
+                    start, end, product.getTitlu() != null ? product.getTitlu() : "anunț"
+            );
+            conversationService.sendMessage(c.getId(), renterId, msg);
+        } catch (Exception ignored) {
         }
-
-        return reservationRepository.save(reservation);
     }
 
     public List<Reservation> getReservationsForAnunt(Long anuntId) {
@@ -55,11 +87,16 @@ public class ReservationService {
         LocalDate today = LocalDate.now();
 
         for (Reservation res : reservations) {
-            if (res.getStatus() == ReservationStatus.CONFIRMED && !today.isBefore(res.getStartDate()) && !today.isAfter(res.getEndDate())) {
+            if (res.getStatus() == ReservationStatus.CONFIRMED
+                    && res.getStartDate() != null
+                    && res.getEndDate() != null
+                    && !today.isBefore(res.getStartDate())
+                    && !today.isAfter(res.getEndDate())) {
                 res.setStatus(ReservationStatus.ACTIVE);
                 reservationRepository.save(res);
-            }
-            else if (res.getStatus() == ReservationStatus.ACTIVE && today.isAfter(res.getEndDate())) {
+            } else if (res.getStatus() == ReservationStatus.ACTIVE
+                    && res.getEndDate() != null
+                    && today.isAfter(res.getEndDate())) {
                 res.setStatus(ReservationStatus.COMPLETED);
                 reservationRepository.save(res);
             }
@@ -71,13 +108,10 @@ public class ReservationService {
         LocalDate today = LocalDate.now();
 
         for (Reservation res : reservations) {
-            // Verifică dacă starea din baza ta de date este PENDING sau alta (ex: IN_ASTEPTARE)
-            if (res.getStatus() == ReservationStatus.PENDING && today.isAfter(res.getCreatedAt().plusDays(1))) {
-
-                // REPARAT: Înlocuiește ANULAT cu starea exactă din enum-ul tău ReservationStatus
-                // (Poate fi: CANCELLED, ANULAT, REJECTED, etc.)
+            if (res.getStatus() == ReservationStatus.PENDING
+                    && res.getCreatedAt() != null
+                    && today.isAfter(res.getCreatedAt().plusDays(1))) {
                 res.setStatus(ReservationStatus.CANCELLED);
-
                 reservationRepository.save(res);
             }
         }

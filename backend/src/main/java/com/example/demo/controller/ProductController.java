@@ -9,6 +9,7 @@ import com.example.demo.repository.ImagineRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.SecurityUtils;
+import com.example.demo.service.GeocodingService;
 import com.example.demo.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,9 @@ public class ProductController {
 
     @Autowired
     private ReviewService reviewService;
+
+    @Autowired
+    private GeocodingService geocodingService;
 
     private static final String FALLBACK_IMAGE =
             "https://images.unsplash.com/photo-1581244277943-fe4a9c777189?q=80&w=600";
@@ -64,19 +68,16 @@ public class ProductController {
             product.setUserId(userId);
             product.setPret(pret);
 
+            geocodingService.geocodeAddress(adresa).ifPresent(coords -> {
+                product.setLatitude(coords[0]);
+                product.setLongitude(coords[1]);
+            });
+
             Product savedProduct = productRepository.save(product);
 
-            if (imagineUrl != null && !imagineUrl.trim().isEmpty()) {
-                Anunt anuntDummy = new Anunt();
-                anuntDummy.setId(savedProduct.getId());
+            saveImages(savedProduct.getId(), payload);
 
-                ImagineAnunt imagineAnunt = new ImagineAnunt();
-                imagineAnunt.setUrl(imagineUrl);
-                imagineAnunt.setAnunt(anuntDummy);
-                imagineRepository.save(imagineAnunt);
-            }
-
-            return ResponseEntity.ok(savedProduct);
+            return ResponseEntity.ok(toProductMap(savedProduct, imagineRepository.findAll()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body("Eroare la scrierea în baza de date MySQL: " + e.getMessage());
         }
@@ -131,6 +132,33 @@ public class ProductController {
         return ResponseEntity.ok("Anunț șters.");
     }
 
+    @SuppressWarnings("unchecked")
+    private void saveImages(Long productId, Map<String, Object> payload) {
+        List<String> urls = new ArrayList<>();
+        Object multi = payload.get("imagineUrls");
+        if (multi instanceof List<?> list) {
+            for (Object item : list) {
+                if (item != null && !item.toString().isBlank()) {
+                    urls.add(item.toString());
+                }
+            }
+        }
+        String single = (String) payload.get("imagineUrl");
+        if (single != null && !single.isBlank()) {
+            urls.add(0, single);
+        }
+        if (urls.isEmpty()) return;
+
+        Anunt anuntRef = new Anunt();
+        anuntRef.setId(productId);
+        for (String url : urls) {
+            ImagineAnunt imagineAnunt = new ImagineAnunt();
+            imagineAnunt.setUrl(url);
+            imagineAnunt.setAnunt(anuntRef);
+            imagineRepository.save(imagineAnunt);
+        }
+    }
+
     private boolean contains(String value, String query) {
         return value != null && value.toLowerCase().contains(query);
     }
@@ -146,10 +174,12 @@ public class ProductController {
         productMap.put("status", p.getStatus());
         productMap.put("userId", p.getUserId());
 
-        Optional<ImagineAnunt> img = images.stream()
+        List<String> imageUrls = images.stream()
                 .filter(i -> i.getAnunt() != null && i.getAnunt().getId().equals(p.getId()))
-                .findFirst();
-        productMap.put("imageUrl", img.map(ImagineAnunt::getUrl).orElse(FALLBACK_IMAGE));
+                .map(ImagineAnunt::getUrl)
+                .collect(Collectors.toList());
+        productMap.put("images", imageUrls);
+        productMap.put("imageUrl", imageUrls.isEmpty() ? FALLBACK_IMAGE : imageUrls.get(0));
 
         User owner = p.getUserId() != null ? userRepository.findById(p.getUserId()).orElse(null) : null;
         String ownerName = owner != null && owner.getNume() != null && !owner.getNume().isBlank()
@@ -168,7 +198,7 @@ public class ProductController {
         Map<String, Object> stats = reviewService.getReviewStats(p.getId());
         productMap.put("averageRating", stats.get("averageRating"));
         productMap.put("reviewCount", stats.get("reviewCount"));
-        productMap.put("reviews", reviewService.getReviews(p.getId()));
+        productMap.put("reviews", reviewService.getReviewDtos(p.getId()));
 
         return productMap;
     }

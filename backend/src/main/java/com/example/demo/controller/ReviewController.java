@@ -1,11 +1,12 @@
 package com.example.demo.controller;
 
-import com.example.demo.model.Review;
 import com.example.demo.security.SecurityUtils;
 import com.example.demo.service.ReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/reviews")
@@ -18,22 +19,29 @@ public class ReviewController {
     @PostMapping("/{productId}")
     public ResponseEntity<?> addReview(
             @PathVariable Long productId,
-            @RequestBody Review review
+            @RequestBody Map<String, Object> body
     ) {
-        try {
-            return ResponseEntity.ok(reviewService.addReview(productId, SecurityUtils.currentUserId(), review));
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        Integer rating = body.get("rating") instanceof Number n ? n.intValue() : null;
+        String comment = body.get("comment") != null ? body.get("comment").toString() : "";
+        return ResponseEntity.ok(
+                reviewService.addReview(productId, SecurityUtils.currentUserId(), rating, comment)
+        );
     }
 
     @GetMapping("/{productId}")
     public ResponseEntity<?> getReviews(@PathVariable Long productId) {
-        return ResponseEntity.ok(reviewService.getReviews(productId));
+        return ResponseEntity.ok(reviewService.getReviewDtos(productId));
     }
 
     @GetMapping("/{productId}/stats")
     public ResponseEntity<?> getStats(@PathVariable Long productId) {
         return ResponseEntity.ok(reviewService.getReviewStats(productId));
+    }
+
+    @GetMapping("/{productId}/can-review")
+    public ResponseEntity<?> canReview(@PathVariable Long productId) {
+        Long userId = SecurityUtils.currentUserId();
+        boolean can = reviewService.canReviewProduct(userId, productId);
+        return ResponseEntity.ok(Map.of("canReview", can));
     }
 }

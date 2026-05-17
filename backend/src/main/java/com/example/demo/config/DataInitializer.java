@@ -23,16 +23,17 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seed(String email, String nume, String password, UserRole role) {
-        if (userRepository.findByEmail(email).isPresent()) {
-            return;
-        }
-        User user = new User();
+        User user = userRepository.findByEmail(email).orElseGet(User::new);
         user.setEmail(email);
         user.setNume(nume);
-        user.setPassword(passwordEncoder.encode(password));
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(password));
+        }
         user.setRole(role.name());
         user.setVerified(true);
+        user.setPro(true);
+        user.setVerificationStatus("VERIFIED");
         userRepository.save(user);
-        System.out.println("[Rentix] Cont " + role.name() + " creat: " + email + " / " + password);
+        System.out.println("[Rentix] Cont staff " + role.name() + ": " + email);
     }
 }

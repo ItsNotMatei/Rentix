@@ -34,6 +34,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(errorBody("BAD_REQUEST", ex.getMessage(), null));
     }
 
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<Map<String, Object>> handleRuntime(RuntimeException ex) {
+        String message = production ? "Operațiunea nu a putut fi finalizată." : ex.getMessage();
+        return ResponseEntity.badRequest().body(errorBody("BAD_REQUEST", message, null));
+    }
+
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<Map<String, Object>> handleBadCredentials(BadCredentialsException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)

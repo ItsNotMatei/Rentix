@@ -12,4 +12,6 @@ public interface MarketplaceOrderRepository extends JpaRepository<MarketplaceOrd
     Optional<MarketplaceOrder> findByStripePaymentIntentId(String paymentIntentId);
     List<MarketplaceOrder> findByBuyerIdOrSellerIdOrderByCreatedAtDesc(Long buyerId, Long sellerId);
     boolean existsByListingIdAndEscrowStatusIn(Long listingId, List<EscrowStatus> statuses);
+
+    boolean existsByBuyerIdAndListingIdAndEscrowStatus(Long buyerId, Long listingId, EscrowStatus status);
 }

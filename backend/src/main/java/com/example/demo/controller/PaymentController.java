@@ -30,6 +30,9 @@ public class PaymentController {
     private final UserRepository userRepository;
     private final com.example.demo.config.StripeProperties stripeProperties;
 
+    @Value("${rentix.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     @PostConstruct
     public void init() {
         if (stripeProperties.getSecretKey() != null && !stripeProperties.getSecretKey().isBlank()) {
@@ -104,9 +107,11 @@ public class PaymentController {
 
             SessionCreateParams params = SessionCreateParams.builder()
                     .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+                    .setClientReferenceId(userId)
                     .addPaymentMethodType(SessionCreateParams.PaymentMethodType.CARD)
-                    .setSuccessUrl("http://localhost:5173/profile?subscription=success&userId=" + userId)
-                    .setCancelUrl("http://localhost:5173/profile?subscription=cancel")
+                    .setSuccessUrl(frontendUrl + "/profile?tab=beneficii&subscription=success")
+                    .setCancelUrl(frontendUrl + "/profile?tab=beneficii&subscription=cancel")
+                    .putMetadata("userId", userId)
                     .addLineItem(
                             SessionCreateParams.LineItem.builder()
                                     .setPrice(priceId)
@@ -122,8 +127,7 @@ public class PaymentController {
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("message", "Nu s-a putut crea sesiunea de abonament."));
         }
     }
 

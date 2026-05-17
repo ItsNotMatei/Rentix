@@ -23,6 +23,11 @@ public class AdminController {
         return adminService.getStats();
     }
 
+    @GetMapping("/analytics")
+    public Map<String, Object> analytics() {
+        return adminService.analytics();
+    }
+
     @GetMapping("/users")
     public Page<User> users(
             @RequestParam(defaultValue = "") String q,
@@ -55,8 +60,12 @@ public class AdminController {
     }
 
     @GetMapping("/listings")
-    public ResponseEntity<?> listings() {
-        return ResponseEntity.ok(adminService.allListings());
+    public Page<com.example.demo.model.Product> listings(
+            @RequestParam(defaultValue = "") String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return adminService.listingsPage(page, size, q);
     }
 
     @DeleteMapping("/listings/{id}")
@@ -66,8 +75,11 @@ public class AdminController {
     }
 
     @GetMapping("/reviews")
-    public ResponseEntity<?> reviews() {
-        return ResponseEntity.ok(adminService.allReviews());
+    public org.springframework.data.domain.Page<com.example.demo.model.Review> reviews(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        return adminService.reviewsPage(page, size);
     }
 
     @DeleteMapping("/reviews/{id}")

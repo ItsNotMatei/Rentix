@@ -63,7 +63,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/signup", "/api/auth/signin", "/api/auth/refresh").permitAll()
-                        .requestMatchers("/api/payments/webhook").permitAll()
+                        .requestMatchers("/api/payments/webhook", "/api/identity/webhook").permitAll()
                         .requestMatchers("/chat/**", "/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
@@ -76,6 +76,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/reviews/**").authenticated()
                         .requestMatchers("/reservations", "/reservations/**").authenticated()
                         .requestMatchers("/api/payments/**", "/api/identity/**", "/api/users/**").authenticated()
+                        .requestMatchers("/api/favorites/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())

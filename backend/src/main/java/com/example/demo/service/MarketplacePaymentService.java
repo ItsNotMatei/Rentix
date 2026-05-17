@@ -31,6 +31,7 @@ public class MarketplacePaymentService {
     private final MarketplaceOrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final OfferRepository offerRepository;
+    private final VerificationGuard verificationGuard;
 
     @Value("${rentix.frontend.url:http://localhost:5173}")
     private String frontendUrl;
@@ -44,6 +45,7 @@ public class MarketplacePaymentService {
 
     @Transactional
     public Map<String, String> createBuyNowCheckout(Long listingId, Long buyerId) throws Exception {
+        verificationGuard.requireVerified(buyerId);
         Product product = productRepository.findById(listingId).orElseThrow();
         validateAvailable(product);
         if (product.getUserId().equals(buyerId)) {
@@ -74,6 +76,7 @@ public class MarketplacePaymentService {
 
     @Transactional
     public Map<String, String> createOfferPaymentCheckout(Long offerId, Long buyerId) throws Exception {
+        verificationGuard.requireVerified(buyerId);
         Offer offer = offerRepository.findByIdAndBuyerId(offerId, buyerId)
                 .orElseThrow(() -> new IllegalArgumentException("Ofertă inexistentă."));
         if (offer.getStatus() != OfferStatus.ACCEPTED) {

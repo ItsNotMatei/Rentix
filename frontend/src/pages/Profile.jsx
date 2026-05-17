@@ -5,16 +5,20 @@ import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import axios from 'axios';
 import authService from '../services/authService';
-import api from '../services/api';
+import api, { getStoredUser, setStoredUser } from '../services/api';
 import '../css/profile.css';
+import AppLayout from '@/components/layout/AppLayout';
+import ListingCard from '@/components/listing/ListingCard';
+import { getMyFavorites } from '@/services/favoriteService';
+import { getMyOrders, confirmDelivery, shipOrder } from '@/services/paymentService';
 
 const Profile = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Citim user-ul din localStorage la inițializare
-    const savedUser = JSON.parse(localStorage.getItem("user")) || { nume: "Utilizator", email: "nespecificat@email.com", pro: false, isVerified: false, verified: false };
+    // User cache în sessionStorage (JWT în cookies HttpOnly)
+    const savedUser = getStoredUser() || { nume: "Utilizator", email: "nespecificat@email.com", pro: false, isVerified: false, verified: false };
     const [user, setUser] = useState(savedUser);
 
     // Citim tab-ul curent direct din URL sau aplicăm valoarea implicită 'cont'
@@ -33,6 +37,24 @@ const Profile = () => {
     // Stare pentru încărcarea sesiunii Stripe Identity
     const [verifying, setVerifying] = useState(false);
     const stompClient = useRef(null);
+    const [favorites, setFavorites] = useState([]);
+    const [orders, setOrders] = useState([]);
+    const [favLoading, setFavLoading] = useState(false);
+    const [ordersLoading, setOrdersLoading] = useState(false);
+
+    useEffect(() => {
+        if (activeTab === 'favorite' && user?.id) {
+            setFavLoading(true);
+            getMyFavorites().then(setFavorites).catch(() => setFavorites([])).finally(() => setFavLoading(false));
+        }
+    }, [activeTab, user?.id]);
+
+    useEffect(() => {
+        if (activeTab === 'comenzi' && user?.id) {
+            setOrdersLoading(true);
+            getMyOrders().then(setOrders).catch(() => setOrders([])).finally(() => setOrdersLoading(false));
+        }
+    }, [activeTab, user?.id]);
 
     // --- EVALUARE FLEXIBILĂ PROPRIETATE VERIFICARE (Sincronizare completă cu MySQL tinyint/boolean) ---
     const esteVerificat = user?.isVerified === true || user?.isVerified === 1 || user?.verified === true || user?.verified === 1;
@@ -43,7 +65,7 @@ const Profile = () => {
         if (urlParams.get('subscription') === 'success' && user?.id) {
             axios.post(`http://localhost:8080/api/payments/activate-pro?userId=${user.id}`)
                 .then(res => {
-                    localStorage.setItem('user', JSON.stringify(res.data));
+                    setStoredUser(res.data);
                     setUser(res.data);
                     alert("Felicitări! Abonamentul tău Rentix PRO este acum activ! 👑");
                     setSearchParams({ tab: 'cont' });
@@ -65,7 +87,7 @@ const Profile = () => {
                         verified: true
                     };
 
-                    localStorage.setItem('user', JSON.stringify(updatedUser));
+                    setStoredUser(updatedUser);
                     setUser(updatedUser);
 
                     alert("Identitatea ta a fost verificată cu succes prin Stripe! Bifa albastră a fost activată. ✓");
@@ -109,7 +131,7 @@ const Profile = () => {
             const res = await axios.put(`http://localhost:8080/api/payments/update-profile/${user.id}`, {
                 nume, telefon, adresa
             });
-            localStorage.setItem('user', JSON.stringify(res.data));
+            setStoredUser(res.data);
             setUser(res.data);
             setEditMode(false);
             alert("Datele contului au fost actualizate!");
@@ -138,37 +160,11 @@ const Profile = () => {
                 console.error("URL-ul Stripe lipsește din răspuns:", res.data);
             }
         } catch (err) {
-            console.error("Stripe error details:", err.response?.data || err.message);
-            alert("Eroare la conectarea cu Stripe. Verifică consola pentru detalii.");
-        }
-    };
-// 1. Funcția care trimite datele dinamice către Spring Boot
-    const handleRentProduct = async () => {
-        try {
-            const response = await axios.post('http://localhost:8080/api/payments/create-escrow-session', {
-                userId: user.id,                // ID-ul chiriașului (cel logat)
-                productName: "Bormașină Makita", // Numele luat din starea produsului tau
-                amount: 150                     // Prețul total în RON calculat din zbor
-            });
-
-            if (response.data && response.data.url) {
-                // Trimitem chiriașul pe pagina Stripe să blocheze banii
-                window.location.href = response.data.url;
-            }
-        } catch (err) {
-            console.error("Eroare la pornirea Escrow:", err);
-            alert("Nu s-a putut inițializa plata securizată.");
+            alert(err.friendlyMessage || err.response?.data?.message || 'Eroare la conectarea cu Stripe.');
         }
     };
 
-// 2. Butonul pe care îl randezi în interfață (în return-ul componentei):
-    <button
-        onClick={handleRentProduct}
-        style={{ background: '#0d9488', color: '#fff', padding: '12px 24px', borderRadius: '8px', fontWeight: 'bold', cursor: 'pointer' }}
-    >
-        Închiriază în siguranță (Escrow)
-    </button>
-    // --- LOGICĂ STRIPE IDENTITY (Reparată cu trimitere ID curat) ---
+    // --- LOGICĂ STRIPE IDENTITY ---
     const handleStartVerification = async (userId) => {
         if (!userId) {
             alert("Eroare: ID-ul utilizatorului lipsește.");
@@ -210,54 +206,53 @@ const Profile = () => {
             case 'comenzi':
                 return (
                     <div className="tab-content-fade">
-                        <h2 className="tab-section-title">Comenzile mele (Sistem Escrow Active)</h2>
-
-                        {/* Exemplu de card de comandă activă blocat în sistemul Middle-Man */}
-                        <div style={{ border: '1px solid #cbd5e1', padding: '20px', borderRadius: '12px', background: '#fff', marginTop: '16px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                                <div>
-                                    <h4 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: '700' }}>Bormașină Makita XPT</h4>
-                                    <p style={{ margin: 0, fontSize: '13px', color: '#6b7280' }}>ID Tranzacție Stripe: <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>pi_3MtwXBL...</code></p>
+                        <h2 className="tab-section-title">Comenzile mele</h2>
+                        {ordersLoading ? (
+                            <p style={{ color: '#64748b' }}>Se încarcă...</p>
+                        ) : orders.length === 0 ? (
+                            <p style={{ color: '#64748b' }}>Nu ai comenzi active.</p>
+                        ) : orders.map((order) => {
+                            const isBuyer = order.buyerId === user.id;
+                            const isSeller = order.sellerId === user.id;
+                            return (
+                                <div key={order.id} style={{ border: '1px solid #e2e8f0', padding: '20px', borderRadius: '12px', background: '#fff', marginTop: '16px' }}>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                                        <div>
+                                            <h4 style={{ margin: 0 }}>Comandă #{order.id} · Anunț #{order.listingId}</h4>
+                                            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>{(order.amountCents / 100).toFixed(2)} RON</p>
+                                        </div>
+                                        <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 600 }}>{order.escrowStatus}</span>
+                                    </div>
+                                    <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
+                                        {isSeller && order.escrowStatus === 'ESCROW_ACTIVE' && (
+                                            <button type="button" onClick={() => shipOrder(order.id).then(() => getMyOrders().then(setOrders))} style={{ background: '#0284c7', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}>Marchează expediat</button>
+                                        )}
+                                        {isBuyer && order.escrowStatus === 'SHIPPED' && (
+                                            <button type="button" onClick={() => confirmDelivery(order.id).then(() => getMyOrders().then(setOrders))} style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}>Confirmă livrarea</button>
+                                        )}
+                                    </div>
                                 </div>
-                                <span style={{ background: '#fef3c7', color: '#d97706', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '600' }}>
-                        Bani Blocați (Escrow)
-                    </span>
-                            </div>
-
-                            <hr style={{ border: 'none', borderTop: '1px solid #f1f5f9', margin: '14px 0' }} />
-
-                            <p style={{ fontSize: '13.5px', color: '#4b5563', lineHeight: '1.5', margin: '0 0 16px 0' }}>
-                                🔒 Banii tăi (150 RON) sunt în siguranță la Rentix. Proprietarul va primi suma doar după ce apeși pe butonul de mai jos, confirmând că ai intrat în posesia obiectului și acesta corespunde descrierii.
-                            </p>
-
-                            <button
-                                onClick={() => {
-                                    // Aici pasezi ID-ul PaymentIntent primit de la Stripe salvat la comandă
-                                    const mockPaymentIntentId = "pi_AICI_PUI_ID_UL_TRANZACTIEI";
-
-                                    axios.post(`http://localhost:8080/api/payments/capture-payment/${mockPaymentIntentId}`)
-                                        .then(() => {
-                                            alert("Tranzacție finalizată! Banii au plecat spre proprietar. Mulțumim că folosești Rentix Escrow! 🤝");
-                                            window.location.reload();
-                                        })
-                                        .catch(err => console.error("Eroare la captură:", err));
-                                }}
-                                style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '10px 18px', borderRadius: '8px', fontWeight: '600', cursor: 'pointer', fontSize: '13px' }}
-                            >
-                                Confirm Primirea Produsului (Eliberează Banii)
-                            </button>
-                        </div>
+                            );
+                        })}
                     </div>
                 );
             case 'favorite':
                 return (
                     <div className="tab-content-fade">
                         <h2 className="tab-section-title">Anunțuri favorite</h2>
-                        <div className="empty-state-box">
-                            <Heart size={48} className="empty-icon" />
-                            <h3>Lista ta este goală</h3>
-                            <p>Salvează produsele care îți plac apasând pe iconița în formă de inimă din pagina principală.</p>
-                        </div>
+                        {favLoading ? (
+                            <p style={{ color: '#64748b' }}>Se încarcă...</p>
+                        ) : favorites.length === 0 ? (
+                            <div className="empty-state-box">
+                                <Heart size={48} className="empty-icon" />
+                                <h3>Lista ta este goală</h3>
+                                <p>Salvează produse apăsând inima pe un anunț.</p>
+                            </div>
+                        ) : (
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+                                {favorites.map((f) => <ListingCard key={f.id} listing={f} />)}
+                            </div>
+                        )}
                     </div>
                 );
             case 'beneficii':
@@ -443,6 +438,7 @@ const Profile = () => {
     };
 
     return (
+        <AppLayout>
         <div className="profile-page-wrapper">
             <div className="profile-layout-container">
 
@@ -471,6 +467,9 @@ const Profile = () => {
                     </div>
 
                     <nav className="sidebar-menu-items">
+                        <Link to="/" className="menu-btn" style={{ textDecoration: 'none', marginBottom: '8px' }}>
+                            ← Înapoi la Rentix
+                        </Link>
                         <button
                             className={`menu-btn ${activeTab === 'cont' ? 'active' : ''}`}
                             onClick={() => handleTabChange('cont')}
@@ -528,6 +527,7 @@ const Profile = () => {
 
             </div>
         </div>
+        </AppLayout>
     );
 };
 

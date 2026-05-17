@@ -3,8 +3,11 @@ package com.example.demo.controller;
 import com.example.demo.dto.*;
 import com.example.demo.model.User;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.security.AuthCookieService;
 import com.example.demo.security.SecurityUtils;
 import com.example.demo.service.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,27 +20,58 @@ public class AuthController {
 
     private final AuthService authService;
     private final UserRepository userRepository;
+    private final AuthCookieService authCookieService;
 
     @PostMapping("/signup")
-    public ResponseEntity<AuthResponse> signup(@Valid @RequestBody SignupRequest request) {
-        return ResponseEntity.ok(authService.signup(request));
+    public ResponseEntity<AuthResponse> signup(
+            @Valid @RequestBody SignupRequest request,
+            HttpServletResponse response
+    ) {
+        AuthResponse auth = authService.signup(request);
+        authCookieService.writeAuthCookies(response, auth);
+        return ResponseEntity.ok(auth);
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<AuthResponse> signin(@Valid @RequestBody LoginRequest request) {
-        return ResponseEntity.ok(authService.login(request));
+    public ResponseEntity<AuthResponse> signin(
+            @Valid @RequestBody LoginRequest request,
+            HttpServletResponse response
+    ) {
+        AuthResponse auth = authService.login(request);
+        authCookieService.writeAuthCookies(response, auth);
+        return ResponseEntity.ok(auth);
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
-        return ResponseEntity.ok(authService.refresh(request.getRefreshToken()));
+    public ResponseEntity<AuthResponse> refresh(
+            @RequestBody(required = false) RefreshTokenRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse
+    ) {
+        String refreshValue = request != null && request.getRefreshToken() != null
+                ? request.getRefreshToken()
+                : authCookieService.readRefreshToken(httpRequest);
+        if (refreshValue == null || refreshValue.isBlank()) {
+            throw new org.springframework.security.authentication.BadCredentialsException("Refresh token lipsă.");
+        }
+        AuthResponse auth = authService.refresh(refreshValue);
+        authCookieService.writeAuthCookies(httpResponse, auth);
+        return ResponseEntity.ok(auth);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody(required = false) RefreshTokenRequest request) {
-        if (request != null && request.getRefreshToken() != null) {
-            authService.logout(request.getRefreshToken());
+    public ResponseEntity<Void> logout(
+            @RequestBody(required = false) RefreshTokenRequest request,
+            HttpServletRequest httpRequest,
+            HttpServletResponse httpResponse
+    ) {
+        String refresh = request != null && request.getRefreshToken() != null
+                ? request.getRefreshToken()
+                : authCookieService.readRefreshToken(httpRequest);
+        if (refresh != null) {
+            authService.logout(refresh);
         }
+        authCookieService.clearAuthCookies(httpResponse);
         return ResponseEntity.noContent().build();
     }
 

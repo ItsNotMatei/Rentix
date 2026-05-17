@@ -21,9 +21,11 @@ public class OfferService {
     private final OfferRepository offerRepository;
     private final ProductRepository productRepository;
     private final ConversationService conversationService;
+    private final VerificationGuard verificationGuard;
 
     @Transactional
     public Offer createOffer(Long listingId, Long buyerId, Double amount, Long conversationId) {
+        verificationGuard.requireVerified(buyerId);
         Product product = productRepository.findById(listingId)
                 .orElseThrow(() -> new IllegalArgumentException("Anunț inexistent."));
         if (!"AVAILABLE".equalsIgnoreCase(product.getStatus()) && !"available".equalsIgnoreCase(product.getStatus())) {

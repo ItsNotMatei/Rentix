@@ -28,7 +28,16 @@ public class IdentityController {
         if (sessionId != null) {
             identityService.handleVerifiedSession(sessionId);
         }
-        return ResponseEntity.ok(Map.of("status", "ok"));
+        return ResponseEntity.ok(identityService.getUserPublicAfterVerify(SecurityUtils.currentUserId()));
+    }
+
+    @PostMapping("/webhook")
+    public ResponseEntity<String> stripeIdentityWebhook(
+            @RequestBody String payload,
+            @RequestHeader(value = "Stripe-Signature", required = false) String sigHeader
+    ) throws Exception {
+        identityService.handleStripeWebhook(payload, sigHeader);
+        return ResponseEntity.ok("ok");
     }
 
     @GetMapping("/status")

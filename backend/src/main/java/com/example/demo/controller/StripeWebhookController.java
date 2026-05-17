@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.service.MarketplacePaymentService;
+import com.example.demo.service.StripeWebhookHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,14 +10,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class StripeWebhookController {
 
-    private final MarketplacePaymentService paymentService;
+    private final StripeWebhookHandler webhookHandler;
 
     @PostMapping("/webhook")
     public ResponseEntity<String> webhook(
             @RequestBody String payload,
             @RequestHeader(value = "Stripe-Signature", required = false) String sigHeader
     ) throws Exception {
-        paymentService.handleWebhookEvent(payload, sigHeader);
+        webhookHandler.handle(payload, sigHeader);
         return ResponseEntity.ok("ok");
     }
 }

@@ -15,4 +15,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
             String nume,
             Pageable pageable
     );
+
+    long countByIsVerifiedTrue();
+
+    long countByIsProTrue();
 }

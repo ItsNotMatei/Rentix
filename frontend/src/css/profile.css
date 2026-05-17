@@ -41,7 +41,7 @@
 .user-avatar-circle {
     width: 48px;
     height: 48px;
-    background: #0d9488;
+    background: #0284c7;
     color: white;
     font-size: 18px;
     font-weight: 700;
@@ -71,10 +71,10 @@
 .status-online-indicator .dot {
     width: 8px;
     height: 8px;
-    background-color: #10b981;
+    background-color: #38bdf8;
     border-radius: 50%;
     display: inline-block;
-    box-shadow: 0 0 8px #10b981;
+    box-shadow: 0 0 8px #38bdf8;
 }
 
 /* Navigație Butoane Sidebar */
@@ -103,12 +103,12 @@
 
 .menu-btn:hover {
     background-color: #f1f5f9;
-    color: #0d9488;
+    color: #0284c7;
 }
 
 .menu-btn.active {
     background-color: #f0fdfa;
-    color: #0d9488;
+    color: #0284c7;
 }
 
 .sidebar-footer-zone {
@@ -215,7 +215,7 @@
 .edit-link {
     background: none;
     border: none;
-    color: #0d9488;
+    color: #0284c7;
     cursor: pointer;
     padding: 0;
     font-size: 13px;
@@ -239,7 +239,7 @@
 }
 
 .badge-genius {
-    background: #0d9488;
+    background: #0284c7;
     color: white;
     display: inline-block;
     padding: 4px 14px;
@@ -302,7 +302,7 @@
 }
 
 .stat-box:hover {
-    border-color: #0d9488;
+    border-color: #0284c7;
     transform: translateY(-2px);
     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
 }
@@ -352,7 +352,7 @@
 }
 
 .back-to-home-btn {
-    background-color: #0d9488;
+    background-color: #0284c7;
     color: white;
     border: none;
     padding: 10px 20px;

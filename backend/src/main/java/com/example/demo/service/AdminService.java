@@ -121,14 +121,26 @@ public class AdminService {
         return reportRepository.save(report);
     }
 
-    public List<Product> allListings() {
+    public Page<Product> listingsPage(int page, int size, String q) {
         SecurityUtils.requireRole(UserRole.MODERATOR);
-        return productRepository.findAll();
+        PageRequest pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id"));
+        if (q == null || q.isBlank()) {
+            return productRepository.findAll(pageable);
+        }
+        return productRepository.findByTitluContainingIgnoreCaseOrDescriereContainingIgnoreCase(q, q, pageable);
     }
 
-    public List<Review> allReviews() {
+    public Page<Review> reviewsPage(int page, int size) {
         SecurityUtils.requireRole(UserRole.MODERATOR);
-        return reviewRepository.findAll();
+        return reviewRepository.findAll(PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "id")));
+    }
+
+    public Map<String, Object> analytics() {
+        SecurityUtils.requireRole(UserRole.MODERATOR);
+        Map<String, Object> data = new HashMap<>(getStats());
+        data.put("verifiedUsers", userRepository.countByIsVerifiedTrue());
+        data.put("proUsers", userRepository.countByIsProTrue());
+        return data;
     }
 
     public List<Reservation> allReservations() {
@@ -136,9 +148,24 @@ public class AdminService {
         return reservationRepository.findAll();
     }
 
-    public List<Conversation> allConversations() {
+    public List<Map<String, Object>> allConversations() {
         SecurityUtils.requireRole(UserRole.MODERATOR);
-        return conversationRepository.findAll();
+        return conversationRepository.findAll().stream().map(c -> {
+            User u1 = userRepository.findById(c.getParticipantOneId()).orElse(null);
+            User u2 = userRepository.findById(c.getParticipantTwoId()).orElse(null);
+            var msgs = messageRepository.findByConversation_IdOrderByCreatedAtAsc(c.getId());
+            var last = msgs.isEmpty() ? null : msgs.get(msgs.size() - 1);
+            Map<String, Object> row = new HashMap<>();
+            row.put("id", c.getId());
+            row.put("listingId", c.getListingId());
+            row.put("participantOneName", u1 != null ? u1.getNume() : "Utilizator");
+            row.put("participantTwoName", u2 != null ? u2.getNume() : "Utilizator");
+            row.put("participantOneAvatar", u1 != null ? u1.getProfilePic() : null);
+            row.put("participantTwoAvatar", u2 != null ? u2.getProfilePic() : null);
+            row.put("lastMessage", last != null ? last.getContent() : "");
+            row.put("lastMessageAt", last != null ? last.getCreatedAt() : c.getUpdatedAt());
+            return row;
+        }).toList();
     }
 
     @Transactional

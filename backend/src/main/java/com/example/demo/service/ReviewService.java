@@ -1,20 +1,18 @@
 package com.example.demo.service;
 
-import com.example.demo.model.Product;
-import com.example.demo.model.ReservationStatus;
-import com.example.demo.model.Review;
-import com.example.demo.model.User;
-import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.ReservationRepository;
-import com.example.demo.repository.ReviewRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.dto.ReviewDto;
+import com.example.demo.model.*;
+import com.example.demo.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,34 +21,65 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final ProductRepository productRepository;
     private final ReservationRepository reservationRepository;
+    private final MarketplaceOrderRepository orderRepository;
     private final UserRepository userRepository;
 
-    public Review addReview(Long productId, Long userId, Review review) {
+    @Transactional
+    public ReviewDto addReview(Long productId, Long userId, Integer rating, String comment) {
+        if (rating == null || rating < 1 || rating > 5) {
+            throw new IllegalArgumentException("Rating-ul trebuie să fie între 1 și 5.");
+        }
         Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Produs inexistent"));
+                .orElseThrow(() -> new IllegalArgumentException("Produs inexistent."));
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("Utilizator inexistent"));
+                .orElseThrow(() -> new IllegalArgumentException("Utilizator inexistent."));
 
-        boolean canReview = reservationRepository.existsByUser_IdAndAnunt_IdAndStatus(
-                userId, productId, ReservationStatus.COMPLETED
-        );
-        if (!canReview) {
-            throw new RuntimeException("Poți lăsa o recenzie doar după o rezervare finalizată.");
+        if (reviewRepository.existsByUser_IdAndAnunt_Id(userId, productId)) {
+            throw new IllegalArgumentException("Ai lăsat deja o recenzie pentru acest anunț.");
         }
 
+        if (!canReviewProduct(userId, productId)) {
+            throw new IllegalArgumentException(
+                    "Poți lăsa o recenzie doar după o rezervare sau comandă finalizată.");
+        }
+
+        Review review = new Review();
         review.setAnunt(product);
         review.setUser(user);
+        review.setRating(rating);
+        review.setComment(comment != null ? comment.trim() : "");
         review.setCreatedAt(LocalDateTime.now());
-        return reviewRepository.save(review);
+        Review saved = reviewRepository.save(review);
+        return toDto(saved, true);
     }
 
-    public List<Review> getReviews(Long productId) {
-        return reviewRepository.findByAnunt_Id(productId);
+    public boolean canReviewProduct(Long userId, Long productId) {
+        if (orderRepository.existsByBuyerIdAndListingIdAndEscrowStatus(
+                userId, productId, EscrowStatus.COMPLETED)) {
+            return true;
+        }
+        if (reservationRepository.existsByUser_IdAndAnunt_IdAndStatus(
+                userId, productId, ReservationStatus.COMPLETED)) {
+            return true;
+        }
+        LocalDate today = LocalDate.now();
+        return reservationRepository.findByAnuntId(productId).stream()
+                .anyMatch(r -> r.getUser() != null
+                        && userId.equals(r.getUser().getId())
+                        && r.getStatus() != ReservationStatus.CANCELLED
+                        && r.getEndDate() != null
+                        && !r.getEndDate().isAfter(today));
+    }
+
+    public List<ReviewDto> getReviewDtos(Long productId) {
+        return reviewRepository.findByAnunt_Id(productId).stream()
+                .map(r -> toDto(r, canReviewProduct(r.getUser().getId(), productId)))
+                .collect(Collectors.toList());
     }
 
     public Map<String, Object> getReviewStats(Long productId) {
-        List<Review> reviews = getReviews(productId);
+        List<Review> reviews = reviewRepository.findByAnunt_Id(productId);
         Map<String, Object> stats = new HashMap<>();
         stats.put("reviewCount", reviews.size());
         if (reviews.isEmpty()) {
@@ -64,5 +93,20 @@ public class ReviewService {
                 .orElse(0.0);
         stats.put("averageRating", Math.round(avg * 10.0) / 10.0);
         return stats;
+    }
+
+    private ReviewDto toDto(Review r, boolean verified) {
+        String name = r.getUser() != null && r.getUser().getNume() != null
+                ? r.getUser().getNume()
+                : "Utilizator";
+        return ReviewDto.builder()
+                .id(r.getId())
+                .rating(r.getRating())
+                .comment(r.getComment())
+                .createdAt(r.getCreatedAt())
+                .userId(r.getUser() != null ? r.getUser().getId() : null)
+                .userName(name)
+                .verifiedPurchase(verified)
+                .build();
     }
 }

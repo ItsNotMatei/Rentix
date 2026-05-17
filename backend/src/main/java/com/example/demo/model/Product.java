@@ -25,4 +25,7 @@ public class Product {
     @Column(name = "user_id")
     private Long userId;
 
+    private Double latitude;
+    private Double longitude;
+
 }
