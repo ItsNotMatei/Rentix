@@ -170,6 +170,8 @@ public class ProductController {
         productMap.put("pret", p.getPret());
         productMap.put("descriere", p.getDescriere());
         productMap.put("adresa", p.getAdresa());
+        productMap.put("latitude", p.getLatitude());
+        productMap.put("longitude", p.getLongitude());
         productMap.put("tip", p.getTip());
         productMap.put("status", p.getStatus());
         productMap.put("userId", p.getUserId());

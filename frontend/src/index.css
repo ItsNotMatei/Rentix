@@ -53,4 +53,24 @@
   .card-premium {
     @apply rounded-2xl border border-border bg-white shadow-[var(--shadow-card)] transition-shadow hover:shadow-lg;
   }
+
+  .rentix-calendar .fc {
+    --fc-border-color: #bfdbfe;
+    --fc-button-bg-color: #0070f3;
+    --fc-button-border-color: #0070f3;
+    --fc-button-hover-bg-color: #1e40af;
+    --fc-button-hover-border-color: #1e40af;
+    --fc-button-active-bg-color: #1e40af;
+    --fc-today-bg-color: #eff6ff;
+  }
+
+  .rentix-calendar .fc-toolbar-title {
+    color: #1e40af;
+    font-weight: 700;
+  }
+
+  .rentix-calendar .fc-col-header-cell-cushion {
+    color: #0369a1;
+    font-weight: 600;
+  }
 }

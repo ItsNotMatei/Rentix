@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -33,13 +35,32 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<AuthResponse> signin(
-            @Valid @RequestBody LoginRequest request,
+    public ResponseEntity<LoginResultDto> signin(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authService.initiateLogin(request));
+    }
+
+    @PostMapping("/verify-2fa")
+    public ResponseEntity<AuthResponse> verifyTwoFactor(
+            @Valid @RequestBody Verify2faRequest request,
             HttpServletResponse response
     ) {
-        AuthResponse auth = authService.login(request);
+        AuthResponse auth = authService.verifyTwoFactor(request);
         authCookieService.writeAuthCookies(response, auth);
         return ResponseEntity.ok(auth);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+        authService.requestPasswordReset(request);
+        return ResponseEntity.ok(Map.of(
+                "message", "Dacă există un cont cu acest email, vei primi instrucțiuni de resetare."
+        ));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        authService.resetPassword(request);
+        return ResponseEntity.ok(Map.of("message", "Parola a fost actualizată. Te poți conecta."));
     }
 
     @PostMapping("/refresh")

@@ -22,11 +22,10 @@ public class ReservationController {
     @PostMapping
     public Reservation createReservation(
             @RequestParam Long anuntId,
-            @RequestParam(required = false) Long userId,
             @RequestParam String startDate,
             @RequestParam String endDate
     ) {
-        Long uid = userId != null ? userId : SecurityUtils.currentUserId();
+        Long uid = SecurityUtils.currentUserId();
         reservationService.updateStatuses();
         return reservationService.createReservation(
                 anuntId,

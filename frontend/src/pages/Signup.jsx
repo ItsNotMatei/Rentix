@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import authService from '@/services/authService'
+import { toast } from '@/lib/toast'
+import { getErrorMessage } from '@/lib/errors'
 
 export default function Signup() {
   const [userData, setUserData] = useState({ username: '', email: '', password: '' })
@@ -17,10 +19,10 @@ export default function Signup() {
     setLoading(true)
     try {
       await authService.register(userData.username, userData.email, userData.password)
-      alert('Cont creat cu succes! Te poți loga.')
+      toast.success('Cont creat cu succes! Te poți loga.')
       navigate('/login')
     } catch (error) {
-      alert(error.response?.data?.message || 'Eroare la înregistrare.')
+      toast.error(getErrorMessage(error, 'Eroare la înregistrare.'))
     } finally {
       setLoading(false)
     }

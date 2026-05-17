@@ -6,6 +6,7 @@ import Stomp from 'stompjs';
 import axios from 'axios';
 import authService from '../services/authService';
 import api, { getStoredUser, setStoredUser } from '../services/api';
+import { toast } from '@/lib/toast';
 import '../css/profile.css';
 import AppLayout from '@/components/layout/AppLayout';
 import ListingCard from '@/components/listing/ListingCard';
@@ -67,7 +68,7 @@ const Profile = () => {
                 .then(res => {
                     setStoredUser(res.data);
                     setUser(res.data);
-                    alert("Felicitări! Abonamentul tău Rentix PRO este acum activ! 👑");
+                    toast.success("Felicitări! Abonamentul tău Rentix PRO este acum activ!");
                     setSearchParams({ tab: 'cont' });
                 })
                 .catch(err => console.error("Eroare activare PRO:", err));
@@ -90,7 +91,7 @@ const Profile = () => {
                     setStoredUser(updatedUser);
                     setUser(updatedUser);
 
-                    alert("Identitatea ta a fost verificată cu succes prin Stripe! Bifa albastră a fost activată. ✓");
+                    toast.success("Identitatea ta a fost verificată cu succes prin Stripe!");
 
                     // Curățăm parametrii din URL pentru a nu re-executa ruta la refresh
                     setSearchParams({ tab: 'cont' });
@@ -134,17 +135,17 @@ const Profile = () => {
             setStoredUser(res.data);
             setUser(res.data);
             setEditMode(false);
-            alert("Datele contului au fost actualizate!");
+            toast.success("Datele contului au fost actualizate!");
         } catch (err) {
             console.error("Eroare salvare profil:", err);
-            alert("A apărut o eroare la salvarea datelor.");
+            toast.error("A apărut o eroare la salvarea datelor.");
         }
     };
 
     // --- LOGICĂ SUB-SESSION STRIPE ---
     const handleSubscribeStripe = async () => {
         if (!user?.id) {
-            alert("Trebuie să fii autentificat pentru a te abona.");
+            toast.info("Trebuie să fii autentificat pentru a te abona.");
             return;
         }
         try {
@@ -160,14 +161,14 @@ const Profile = () => {
                 console.error("URL-ul Stripe lipsește din răspuns:", res.data);
             }
         } catch (err) {
-            alert(err.friendlyMessage || err.response?.data?.message || 'Eroare la conectarea cu Stripe.');
+            toast.error(err.friendlyMessage || err.response?.data?.message || 'Eroare la conectarea cu Stripe.');
         }
     };
 
     // --- LOGICĂ STRIPE IDENTITY ---
     const handleStartVerification = async (userId) => {
         if (!userId) {
-            alert("Eroare: ID-ul utilizatorului lipsește.");
+            toast.error("Eroare: ID-ul utilizatorului lipsește.");
             return;
         }
         setVerifying(true);
@@ -179,11 +180,11 @@ const Profile = () => {
                 window.location.href = response.data.url;
             } else {
                 console.error("Serverul nu a returnat un URL valid", response.data);
-                alert("Eroare la configurarea sesiunii de verificare.");
+                toast.error("Eroare la configurarea sesiunii de verificare.");
             }
         } catch (error) {
             console.error("Eroare Stripe Identity:", error);
-            alert("A apărut o eroare la pornirea verificării. Verifică consola backend.");
+            toast.error("A apărut o eroare la pornirea verificării.");
         } finally {
             setVerifying(false);
         }
@@ -277,7 +278,7 @@ const Profile = () => {
                                         <li style={{ color: '#9ca3af', textDecoration: 'line-through' }}><X size={16} color="#ef4444" style={{ marginRight: '10px', verticalAlign: 'middle' }} /> Asigurare bunuri inclusă</li>
                                     </ul>
                                 </div>
-                                <button disabled={!user?.pro} onClick={() => alert("Ești deja pe planul de bază.")} style={{ marginTop: '36px', width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: !user?.pro ? '#f1f5f9' : '#fff', color: !user?.pro ? '#94a3b8' : '#1e293b', fontWeight: '600', cursor: user?.pro ? 'pointer' : 'default', fontSize: '14px' }}>
+                                <button disabled={!user?.pro} onClick={() => toast.info("Ești deja pe planul de bază.")} style={{ marginTop: '36px', width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #cbd5e1', background: !user?.pro ? '#f1f5f9' : '#fff', color: !user?.pro ? '#94a3b8' : '#1e293b', fontWeight: '600', cursor: user?.pro ? 'pointer' : 'default', fontSize: '14px' }}>
                                     {!user?.pro ? 'Planul tău actual' : 'Revino la Normal'}
                                 </button>
                             </div>
@@ -341,37 +342,31 @@ const Profile = () => {
                                         </div>
                                     </div>
 
-                                    {/* --- CASETA INTEGRATĂ PENTRU VERIFICARE BULETIN --- */}
-                                    {/* Cadrul de mai jos a fost comentat pentru a trece peste verificare temporar
-
-<div style={{ marginTop: '24px', padding: '18px', borderRadius: '12px', background: esteVerificat ? '#f0fdf4' : '#fff8f1', border: esteVerificat ? '1px solid #bbf7d0' : '1px solid #fed7aa' }}>
-    <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px', color: esteVerificat ? '#16a34a' : '#ea580c' }}>
-        Verificare Buletin / ID {esteVerificat && <CheckCircle size={18} color="#22c55e" fill="#e0f2fe" />}
-    </h4>
-    {esteVerificat ? (
-        <p style={{ color: '#16a34a', margin: 0, fontSize: '13.5px', lineHeight: '1.5' }}>
-            Identitatea ta a fost securizată și confirmată prin **Stripe Identity**. Ai primit insigna de încredere și poți posta anunțuri pe platformă.
-        </p>
-    ) : (
-        <div>
-            <p style={{ color: '#c2410c', margin: '0 0 12px 0', fontSize: '13.5px', lineHeight: '1.5' }}>
-                Pentru a menține comunitatea Rentix sigură și family-friendly, ai nevoie de verificarea oficială a buletinului înainte de a posta prima listare.
-            </p>
-            <button
-                onClick={() => handleStartVerification(user?.id)}
-                disabled={verifying}
-                style={{ background: '#0d9488', color: 'white', border: 'none', padding: '9px 16px', borderRadius: '8px', cursor: verifying ? 'default' : 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
-            >
-                {verifying ? "Se inițializează..." : "Începe verificarea securizată"}
-            </button>
-        </div>
-    )}
-</div>*/}
-<div style={{ marginTop: '24px', padding: '18px', borderRadius: '12px', background: '#f0fdf4', border: '1px solid #bbf7d0' }}>
-    <p style={{ color: '#16a34a', margin: 0, fontSize: '13.5px', fontWeight: '600' }}>
-        Mod Dezvoltare: Verificarea cu buletinul este dezactivată. Poți uploada anunțuri liber!
-    </p>
-</div>
+                                    {/* --- CASETA INTEGRATĂ PENTRU VERIFICARE --- */}
+                                    <div style={{ marginTop: '24px', padding: '18px', borderRadius: '12px', background: esteVerificat ? '#f0fdf4' : '#fff8f1', border: esteVerificat ? '1px solid #bbf7d0' : '1px solid #fed7aa' }}>
+                                        <h4 style={{ margin: '0 0 8px 0', fontSize: '15px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px', color: esteVerificat ? '#16a34a' : '#ea580c' }}>
+                                            Verificare Buletin / ID {esteVerificat && <CheckCircle size={18} color="#22c55e" fill="#e0f2fe" />}
+                                        </h4>
+                                        {esteVerificat ? (
+                                            <p style={{ color: '#16a34a', margin: 0, fontSize: '13.5px', lineHeight: '1.5' }}>
+                                                Identitatea ta a fost securizată și confirmată prin **Stripe Identity**. Ai primit insigna de încredere și poți posta sau cumpăra pe platformă.
+                                            </p>
+                                        ) : (
+                                            <div>
+                                                <p style={{ color: '#c2410c', margin: '0 0 12px 0', fontSize: '13.5px', lineHeight: '1.5' }}>
+                                                    Pentru a menține comunitatea Rentix sigură, ai nevoie de verificarea oficială a buletinului înainte de a efectua tranzacții.
+                                                </p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleStartVerification(user?.id)}
+                                                    disabled={verifying}
+                                                    style={{ background: '#0d9488', color: 'white', border: 'none', padding: '9px 16px', borderRadius: '8px', cursor: verifying ? 'default' : 'pointer', fontWeight: '600', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                                                >
+                                                    {verifying ? "Se inițializează..." : "Începe verificarea securizată"}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
 
                                 </div>
 

@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import AdaugaAnunt from './pages/AdaugaAnunt'
 import CalendarPage from './pages/CalendarPage'
 import CumFunctioneaza from './pages/CumFunctioneaza'
@@ -24,6 +26,8 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/adauga" element={<ProtectedRoute><AdaugaAnunt /></ProtectedRoute>} />
         <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/cum-functioneaza" element={<CumFunctioneaza />} />

@@ -1,19 +1,16 @@
 package com.example.demo.service;
 
-import com.example.demo.dto.AuthResponse;
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.SignupRequest;
-import com.example.demo.dto.UserPublicDto;
-import com.example.demo.model.RefreshToken;
+import com.example.demo.dto.*;
 import com.example.demo.model.User;
 import com.example.demo.model.UserRole;
+import com.example.demo.model.RefreshToken;
 import com.example.demo.repository.RefreshTokenRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.JwtProperties;
 import com.example.demo.security.JwtService;
-import com.example.demo.security.RentixUserDetails;
 import com.example.demo.security.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -30,6 +27,11 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JwtProperties jwtProperties;
+    private final AuthTokenService authTokenService;
+    private final EmailService emailService;
+
+    @Value("${rentix.frontend.url:http://localhost:5173}")
+    private String frontendUrl;
 
     @Transactional
     public AuthResponse signup(SignupRequest request) {
@@ -45,24 +47,43 @@ public class AuthService {
         return buildAuthResponse(saved);
     }
 
-    public AuthResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
-                .orElseThrow(() -> new BadCredentialsException("Email sau parolă incorectă."));
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new BadCredentialsException("Email sau parolă incorectă.");
-        }
-        if (user.isBanned()) {
-            throw new BadCredentialsException("Contul este blocat permanent.");
-        }
-        if (user.isSuspended()) {
-            if (user.getSuspendedUntil() == null || LocalDateTime.now().isBefore(user.getSuspendedUntil())) {
-                throw new BadCredentialsException("Contul este suspendat temporar.");
-            }
-            user.setSuspended(false);
-            user.setSuspendedUntil(null);
-            userRepository.save(user);
-        }
+    public LoginResultDto initiateLogin(LoginRequest request) {
+        User user = validateCredentials(request);
+        String challengeId = authTokenService.createTwoFactorChallenge(user);
+        return LoginResultDto.builder()
+                .requiresTwoFactor(true)
+                .challengeId(challengeId)
+                .message("Am trimis un cod de verificare pe email.")
+                .build();
+    }
+
+    @Transactional
+    public AuthResponse verifyTwoFactor(Verify2faRequest request) {
+        Long userId = authTokenService.consumeTwoFactorCode(request.getChallengeId(), request.getCode());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadCredentialsException("Utilizator inexistent."));
         return buildAuthResponse(user);
+    }
+
+    @Transactional
+    public void requestPasswordReset(ForgotPasswordRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        userRepository.findByEmail(email).ifPresent(user -> {
+            String token = authTokenService.createPasswordResetToken(user);
+            String resetUrl = frontendUrl + "/reset-password?token=" + token;
+            emailService.sendPasswordResetLink(user.getEmail(), resetUrl);
+        });
+    }
+
+    @Transactional
+    public void resetPassword(ResetPasswordRequest request) {
+        Long userId = authTokenService.validatePasswordResetToken(request.getToken());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BadCredentialsException("Link invalid sau expirat."));
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        authTokenService.markPasswordResetUsed(request.getToken());
+        logoutAll(userId);
     }
 
     @Transactional
@@ -92,6 +113,26 @@ public class AuthService {
 
     public UserPublicDto me() {
         return AuthResponse.toPublic(SecurityUtils.currentUser().getUser());
+    }
+
+    private User validateCredentials(LoginRequest request) {
+        User user = userRepository.findByEmail(request.getEmail().trim().toLowerCase())
+                .orElseThrow(() -> new BadCredentialsException("Email sau parolă incorectă."));
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new BadCredentialsException("Email sau parolă incorectă.");
+        }
+        if (user.isBanned()) {
+            throw new BadCredentialsException("Contul este blocat permanent.");
+        }
+        if (user.isSuspended()) {
+            if (user.getSuspendedUntil() == null || LocalDateTime.now().isBefore(user.getSuspendedUntil())) {
+                throw new BadCredentialsException("Contul este suspendat temporar.");
+            }
+            user.setSuspended(false);
+            user.setSuspendedUntil(null);
+            userRepository.save(user);
+        }
+        return user;
     }
 
     private AuthResponse buildAuthResponse(User user) {

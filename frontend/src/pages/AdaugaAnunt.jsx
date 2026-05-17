@@ -8,6 +8,7 @@ import AddressAutocomplete from '@/components/AddressAutocomplete'
 import api, { getStoredUser } from '@/services/api'
 import { CLOUDINARY_CLOUD, CLOUDINARY_PRESET } from '@/lib/utils'
 import { notifyError } from '@/lib/errors'
+import { toast } from '@/lib/toast'
 
 const STEPS = ['Poze', 'Detalii', 'Locație', 'Previzualizare']
 
@@ -76,7 +77,7 @@ export default function AdaugaAnunt() {
 
   const handlePublish = async () => {
     if (!titlu || !pret || !adresa) {
-      alert('Completează titlul, prețul și locația.')
+      toast.error('Completează titlul, prețul și locația.')
       return
     }
     setUploading(true)
@@ -98,7 +99,7 @@ export default function AdaugaAnunt() {
         imagineUrl: ordered[0] || '',
       })
       localStorage.removeItem('rentix-listing-draft')
-      alert('Anunț publicat!')
+      toast.success('Anunț publicat!')
       navigate('/')
     } catch (err) {
       notifyError(err, 'Nu s-a putut publica anunțul.')

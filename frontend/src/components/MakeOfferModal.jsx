@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { createOffer } from '../services/paymentService';
 import { useNavigate } from 'react-router-dom';
+import { toast } from '@/lib/toast';
 
 export default function MakeOfferModal({ product, onClose }) {
     const [amount, setAmount] = useState(product?.pret ? String(Math.floor(product.pret * 0.9)) : '');
@@ -15,7 +16,7 @@ export default function MakeOfferModal({ product, onClose }) {
             onClose();
             navigate(`/chat?cuUtilizator=${product.userId}&produs=${product.id}`);
         } catch (err) {
-            alert(err.response?.data?.message || 'Nu s-a putut trimite oferta.');
+            toast.error(err.response?.data?.message || 'Nu s-a putut trimite oferta.');
         } finally {
             setLoading(false);
         }

@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { BarChart3, MessageSquare, Package, Users } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
+import ConfirmDialog from '@/components/ConfirmDialog'
 import api, { getStoredUser, hasRole } from '@/services/api'
 import authService from '@/services/authService'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { toast } from '@/lib/toast'
+import { notifyError } from '@/lib/errors'
 
 const TABS = [
   { id: 'overview', label: 'Statistici' },
@@ -34,7 +37,10 @@ export default function AdminDashboard() {
   const [page, setPage] = useState(0)
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const [confirm, setConfirm] = useState({ open: false, type: null, id: null })
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
+  const canDelete = hasRole('MODERATOR')
   const visibleTabs = TABS.filter((t) => !t.min || hasRole(t.min))
 
   useEffect(() => {
@@ -79,14 +85,27 @@ export default function AdminDashboard() {
     }
   }
 
-  const handleDeleteListing = async (id) => {
-    await api.delete(`/api/admin/listings/${id}`)
-    loadTab()
-  }
+  const askDeleteListing = (id) => setConfirm({ open: true, type: 'listing', id })
+  const askDeleteReview = (id) => setConfirm({ open: true, type: 'review', id })
 
-  const handleDeleteReview = async (id) => {
-    await api.delete(`/api/admin/reviews/${id}`)
-    loadTab()
+  const handleConfirmDelete = async () => {
+    if (!confirm.id) return
+    setDeleteLoading(true)
+    try {
+      if (confirm.type === 'listing') {
+        await api.delete(`/api/admin/listings/${confirm.id}`)
+        toast.success('Anunțul a fost șters.')
+      } else if (confirm.type === 'review') {
+        await api.delete(`/api/admin/reviews/${confirm.id}`)
+        toast.success('Recenzia a fost ștearsă.')
+      }
+      loadTab()
+    } catch (err) {
+      notifyError(err, 'Ștergerea a eșuat.')
+    } finally {
+      setDeleteLoading(false)
+      setConfirm({ open: false, type: null, id: null })
+    }
   }
 
   const statCards = stats
@@ -100,6 +119,14 @@ export default function AdminDashboard() {
 
   return (
     <AppLayout hideFooter>
+      <ConfirmDialog
+        open={confirm.open}
+        onOpenChange={(open) => !open && setConfirm({ open: false, type: null, id: null })}
+        title="Șterge"
+        description={confirm.type === 'review' ? 'Ești sigur că vrei să ștergi această recenzie?' : 'Ești sigur că vrei să ștergi acest anunț?'}
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
+      />
       <div className="container-rentix py-8">
         <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -161,10 +188,7 @@ export default function AdminDashboard() {
         )}
 
         {tab === 'users' && (
-          <AdminTable
-            headers={['ID', 'Nume', 'Email', 'Rol']}
-            rows={users.map((u) => [u.id, u.nume, u.email, u.role])}
-          />
+          <AdminTable headers={['ID', 'Nume', 'Email', 'Rol']} rows={users.map((u) => [u.id, u.nume, u.email, u.role])} />
         )}
 
         {tab === 'listings' && (
@@ -173,9 +197,13 @@ export default function AdminDashboard() {
               headers={['ID', 'Titlu', 'Preț', '']}
               rows={(listings.content || []).map((l) => [
                 l.id,
-                l.titlu,
+                <Link key={`t-${l.id}`} to={`/product/${l.id}`} className="text-brand-700 hover:underline">{l.titlu}</Link>,
                 l.pret,
-                <button key={l.id} type="button" className="text-red-600" onClick={() => handleDeleteListing(l.id)}>Șterge</button>,
+                canDelete ? (
+                  <button key={l.id} type="button" className="text-red-600 font-medium" onClick={() => askDeleteListing(l.id)}>
+                    Șterge
+                  </button>
+                ) : '—',
               ])}
             />
             <Pager page={page} totalPages={listings.totalPages} onPage={setPage} />
@@ -190,11 +218,35 @@ export default function AdminDashboard() {
                 r.id,
                 `${r.rating}★`,
                 r.comment,
-                <button key={r.id} type="button" className="text-red-600" onClick={() => handleDeleteReview(r.id)}>Șterge</button>,
+                canDelete ? (
+                  <button key={r.id} type="button" className="text-red-600 font-medium" onClick={() => askDeleteReview(r.id)}>
+                    Șterge
+                  </button>
+                ) : '—',
               ])}
             />
             <Pager page={page} totalPages={reviews.totalPages} onPage={setPage} />
           </>
+        )}
+
+        {tab === 'reports' && (
+          <AdminTable
+            headers={['ID', 'Motiv', 'Status', 'Anunț']}
+            rows={(reports || []).map((r) => [r.id, r.reason || r.motiv || '—', r.status || '—', r.listingId || r.productId || '—'])}
+          />
+        )}
+
+        {tab === 'bookings' && (
+          <AdminTable
+            headers={['ID', 'Anunț', 'Utilizator', 'Perioadă', 'Status']}
+            rows={(bookings || []).map((b) => [
+              b.id,
+              b.anuntId || b.listingId || '—',
+              b.userId || b.userName || '—',
+              b.startDate && b.endDate ? `${b.startDate} → ${b.endDate}` : '—',
+              b.status || '—',
+            ])}
+          />
         )}
 
         {tab === 'chat' && (
@@ -220,11 +272,15 @@ function AdminTable({ headers, rows }) {
           <tr>{headers.map((h) => <th key={h} className="px-4 py-3 font-semibold">{h}</th>)}</tr>
         </thead>
         <tbody>
-          {rows.map((row, i) => (
-            <tr key={i} className="border-b last:border-0">
-              {row.map((cell, j) => <td key={j} className="px-4 py-3">{cell}</td>)}
-            </tr>
-          ))}
+          {rows.length === 0 ? (
+            <tr><td colSpan={headers.length} className="px-4 py-8 text-center text-text-muted">Niciun rezultat.</td></tr>
+          ) : (
+            rows.map((row, i) => (
+              <tr key={i} className="border-b last:border-0">
+                {row.map((cell, j) => <td key={j} className="px-4 py-3">{cell}</td>)}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

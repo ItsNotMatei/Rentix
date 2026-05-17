@@ -1,7 +1,6 @@
 import axios from 'axios'
 import api, { clearSession, setStoredUser } from './api'
 import { API_BASE } from '@/lib/utils'
-import { notifyError } from '@/lib/errors'
 
 const authApi = axios.create({
   baseURL: API_BASE,
@@ -12,11 +11,23 @@ const authApi = axios.create({
 const register = (username, email, password) =>
   authApi.post('/api/auth/signup', { nume: username, email, password })
 
+/** Returns { requiresTwoFactor, challengeId, message } — no session until verify2fa */
 const login = async (email, password) => {
   const response = await authApi.post('/api/auth/signin', { email, password })
+  return response.data
+}
+
+const verify2fa = async (challengeId, code) => {
+  const response = await authApi.post('/api/auth/verify-2fa', { challengeId, code })
   setStoredUser(response.data.user)
   return response.data.user
 }
+
+const forgotPassword = (email) =>
+  authApi.post('/api/auth/forgot-password', { email })
+
+const resetPassword = (token, newPassword) =>
+  authApi.post('/api/auth/reset-password', { token, newPassword })
 
 const logout = async () => {
   try {
@@ -34,4 +45,4 @@ const me = async () => {
   return response.data
 }
 
-export default { register, login, logout, me }
+export default { register, login, verify2fa, forgotPassword, resetPassword, logout, me }

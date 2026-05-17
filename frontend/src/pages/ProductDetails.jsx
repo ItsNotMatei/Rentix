@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Calendar, Clock, MapPin, MessageSquare, Share2, ShieldCheck, Star, Tag } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import ImageGallery from '@/components/listing/ImageGallery'
@@ -11,10 +11,12 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input, Textarea } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
-import api from '@/services/api'
+import api, { getStoredUser, hasRole } from '@/services/api'
 import { notifyError } from '@/lib/errors'
-import { getStoredUser, setStoredUser } from '@/services/api'
+import { toast } from '@/lib/toast'
 import { buyNow } from '@/services/paymentService'
+import BookingCalendar from '@/components/booking/BookingCalendar'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 export default function ProductDetails() {
   const { id } = useParams()
@@ -29,6 +31,10 @@ export default function ProductDetails() {
   const [bookingError, setBookingError] = useState('')
   const [showOfferModal, setShowOfferModal] = useState(false)
   const [buyLoading, setBuyLoading] = useState(false)
+  const [calendarRefresh, setCalendarRefresh] = useState(0)
+  const [deleteOpen, setDeleteOpen] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const canModerateDelete = hasRole('MODERATOR')
 
   const fetchProduct = async () => {
     const res = await api.get(`/api/products/${id}`)
@@ -76,18 +82,35 @@ export default function ProductDetails() {
       return
     }
     try {
-      const params = new URLSearchParams({ anuntId: id, userId: user.id, startDate, endDate })
+      const params = new URLSearchParams({ anuntId: id, startDate, endDate })
       await api.post(`/reservations?${params}`)
-      alert('Rezervare realizată cu succes')
-    } catch {
-      setBookingError('Perioada selectată nu este disponibilă.')
+      toast.success('Rezervare realizată cu succes!')
+      setCalendarRefresh((k) => k + 1)
+      setStartDate('')
+      setEndDate('')
+    } catch (err) {
+      setBookingError(err.response?.data?.message || 'Perioada selectată nu este disponibilă.')
+    }
+  }
+
+  const handleDeleteListing = async () => {
+    setDeleteLoading(true)
+    try {
+      await api.delete(`/api/admin/listings/${id}`)
+      toast.success('Anunțul a fost șters.')
+      navigate('/admin')
+    } catch (err) {
+      notifyError(err, 'Nu s-a putut șterge anunțul.')
+    } finally {
+      setDeleteLoading(false)
+      setDeleteOpen(false)
     }
   }
 
   const handleCumparaAcum = async () => {
     const u = getStoredUser()
     if (!u?.isVerified && !u?.verified) {
-      alert('Verifică-ți identitatea din profil înainte de a cumpăra.')
+      toast.info('Verifică-ți identitatea din profil înainte de a cumpăra.')
       navigate('/profile?tab=cont')
       return
     }
@@ -128,6 +151,14 @@ export default function ProductDetails() {
   return (
     <AppLayout>
       {showOfferModal && <MakeOfferModal product={product} onClose={() => setShowOfferModal(false)} />}
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title="Șterge anunțul"
+        description="Ești sigur că vrei să ștergi acest anunț?"
+        onConfirm={handleDeleteListing}
+        loading={deleteLoading}
+      />
       <div className="container-rentix space-y-10 py-8">
         <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
           <ImageGallery images={images} title={product.titlu} />
@@ -145,6 +176,11 @@ export default function ProductDetails() {
               <div className="flex gap-2">
                 <FavoriteButton productId={product.id} />
                 <Button variant="secondary" size="icon" onClick={handleShare}><Share2 size={18} /></Button>
+                {canModerateDelete && (
+                  <Button variant="secondary" size="sm" className="text-red-600" onClick={() => setDeleteOpen(true)}>
+                    Șterge
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -185,6 +221,20 @@ export default function ProductDetails() {
             </Card>
           </div>
         </div>
+
+        {!esteVanzare && (
+          <section>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-xl font-semibold">Disponibilitate</h2>
+              <Button variant="secondary" size="sm" asChild>
+                <Link to={`/calendar?productId=${id}`}>Calendar complet</Link>
+              </Button>
+            </div>
+            <Card className="border-blue-100 p-4">
+              <BookingCalendar productId={id} refreshKey={calendarRefresh} />
+            </Card>
+          </section>
+        )}
 
         <section>
           <h2 className="mb-3 text-xl font-semibold">Locație</h2>
