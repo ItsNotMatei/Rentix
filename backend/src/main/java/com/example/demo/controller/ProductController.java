@@ -75,10 +75,7 @@ public class ProductController {
             product.setUserId(userId);
             product.setPret(pret);
 
-            geocodingService.geocodeAddress(adresa).ifPresent(coords -> {
-                product.setLatitude(coords[0]);
-                product.setLongitude(coords[1]);
-            });
+            applyCoordinates(product, payload, adresa);
 
             Product savedProduct = productRepository.save(product);
 
@@ -203,6 +200,29 @@ public class ProductController {
 
     private boolean contains(String value, String query) {
         return value != null && value.toLowerCase().contains(query);
+    }
+
+    private void applyCoordinates(Product product, Map<String, Object> payload, String adresa) {
+        Double lat = parseCoordinate(payload.get("latitude"));
+        Double lng = parseCoordinate(payload.get("longitude"));
+        if (lat != null && lng != null) {
+            product.setLatitude(lat);
+            product.setLongitude(lng);
+            return;
+        }
+        geocodingService.geocodeAddress(adresa).ifPresent(coords -> {
+            product.setLatitude(coords[0]);
+            product.setLongitude(coords[1]);
+        });
+    }
+
+    private Double parseCoordinate(Object value) {
+        if (value == null) return null;
+        try {
+            return Double.parseDouble(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private Map<String, Object> toProductMap(Product p, List<ImagineAnunt> images) {

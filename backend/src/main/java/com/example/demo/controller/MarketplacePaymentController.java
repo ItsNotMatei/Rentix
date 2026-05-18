@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -33,6 +34,20 @@ public class MarketplacePaymentController {
         return ResponseEntity.ok(paymentService.createOfferPaymentCheckout(offerId, SecurityUtils.currentUserId()));
     }
 
+    @PostMapping("/rental-checkout")
+    public ResponseEntity<?> rentalCheckout(
+            @RequestParam Long listingId,
+            @RequestParam String startDate,
+            @RequestParam String endDate
+    ) throws Exception {
+        return ResponseEntity.ok(paymentService.createRentalCheckout(
+                listingId,
+                SecurityUtils.currentUserId(),
+                LocalDate.parse(startDate),
+                LocalDate.parse(endDate)
+        ));
+    }
+
     @GetMapping("/orders")
     public ResponseEntity<?> myOrders() {
         return ResponseEntity.ok(paymentService.myOrders(SecurityUtils.currentUserId()));
@@ -47,6 +62,12 @@ public class MarketplacePaymentController {
     @PostMapping("/orders/{id}/confirm-delivery")
     public ResponseEntity<?> confirm(@PathVariable Long id) throws Exception {
         MarketplaceOrder order = paymentService.confirmDelivery(id, SecurityUtils.currentUserId());
+        return ResponseEntity.ok(order);
+    }
+
+    @PostMapping("/orders/{id}/accept-payout")
+    public ResponseEntity<?> acceptPayout(@PathVariable Long id) throws Exception {
+        MarketplaceOrder order = paymentService.acceptPayout(id, SecurityUtils.currentUserId());
         return ResponseEntity.ok(order);
     }
 

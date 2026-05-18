@@ -7,11 +7,12 @@ import axios from 'axios';
 import authService from '../services/authService';
 import api, { getStoredUser, setStoredUser } from '../services/api';
 import { toast } from '@/lib/toast';
+import { notifyError } from '@/lib/errors';
 import '../css/profile.css';
 import AppLayout from '@/components/layout/AppLayout';
 import ListingCard from '@/components/listing/ListingCard';
 import { getMyFavorites } from '@/services/favoriteService';
-import { getMyOrders, confirmDelivery, shipOrder } from '@/services/paymentService';
+import { getMyOrders, confirmDelivery, shipOrder, acceptPayout } from '@/services/paymentService';
 
 const Profile = () => {
     const location = useLocation();
@@ -229,7 +230,10 @@ const Profile = () => {
                                             <button type="button" onClick={() => shipOrder(order.id).then(() => getMyOrders().then(setOrders))} style={{ background: '#0284c7', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}>Marchează expediat</button>
                                         )}
                                         {isBuyer && order.escrowStatus === 'SHIPPED' && (
-                                            <button type="button" onClick={() => confirmDelivery(order.id).then(() => getMyOrders().then(setOrders))} style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}>Confirmă livrarea</button>
+                                            <button type="button" onClick={() => confirmDelivery(order.id).then(() => Promise.all([getMyOrders().then(setOrders), authService.me().then(setUser)]))} style={{ background: '#22c55e', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}>Confirmă livrarea</button>
+                                        )}
+                                        {isSeller && !order.payoutCredited && (order.escrowStatus === 'ESCROW_ACTIVE' || order.escrowStatus === 'SHIPPED') && (
+                                            <button type="button" onClick={() => acceptPayout(order.id).then(() => Promise.all([getMyOrders().then(setOrders), authService.me().then((u) => { setStoredUser(u); setUser(u); }), toast.success('Banii au fost încasați în soldul tău.')])).catch((e) => notifyError(e, 'Nu s-a putut încasa plata.'))} style={{ background: '#0d9488', color: '#fff', border: 'none', padding: '8px 14px', borderRadius: '8px', cursor: 'pointer' }}>Încasează banii</button>
                                         )}
                                     </div>
                                 </div>
@@ -336,6 +340,7 @@ const Profile = () => {
                                                 {esteVerificat && <CheckCircle size={16} color="#0284c7" fill="#e0f2fe" title="Utilizator Verificat cu Buletinul" />}
                                             </p>
                                             <p><strong>Adresă Email:</strong> {user.email}</p>
+                                            <p><strong>Sold disponibil:</strong> {(user.balance ?? 0).toFixed(2)} RON</p>
                                             <p><strong>Număr Telefon:</strong> {user.telefon || "Nespecificat"}</p>
                                             <p><strong>Adresă Domiciliu:</strong> {user.adresa || "Nespecificată"}</p>
                                             <button className="edit-link" onClick={() => setEditMode(true)}>Modifică datele tale</button>

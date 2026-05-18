@@ -20,6 +20,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +34,8 @@ public class MarketplacePaymentService {
     private final ProductRepository productRepository;
     private final OfferRepository offerRepository;
     private final VerificationGuard verificationGuard;
+    private final WalletService walletService;
+    private final ReservationService reservationService;
 
     @Value("${rentix.frontend.url:http://localhost:5173}")
     private String frontendUrl;
@@ -106,6 +110,42 @@ public class MarketplacePaymentService {
     }
 
     @Transactional
+    public Map<String, String> createRentalCheckout(
+            Long listingId, Long buyerId, LocalDate startDate, LocalDate endDate
+    ) throws Exception {
+        verificationGuard.requireVerified(buyerId);
+        if (startDate == null || endDate == null || endDate.isBefore(startDate)) {
+            throw new IllegalArgumentException("Perioada de închiriere nu este validă.");
+        }
+        Product product = productRepository.findById(listingId).orElseThrow();
+        if (product.getUserId() != null && product.getUserId().equals(buyerId)) {
+            throw new IllegalArgumentException("Nu poți închiria propriul produs.");
+        }
+        long days = ChronoUnit.DAYS.between(startDate, endDate) + 1;
+        long amountCents = Math.round(product.getPret() * days * 100);
+
+        MarketplaceOrder order = newOrder(listingId, buyerId, product.getUserId(), null, amountCents, false);
+        order.setRental(true);
+        order.setRentalStart(startDate);
+        order.setRentalEnd(endDate);
+        order = orderRepository.save(order);
+
+        Session session = createEscrowCheckoutSession(
+                order.getId(),
+                "Închiriere: " + product.getTitlu() + " (" + days + " zile)",
+                amountCents,
+                buyerId,
+                "/checkout/success?orderId=" + order.getId() + "&type=rental",
+                "/checkout/cancel?orderId=" + order.getId()
+        );
+
+        order.setStripeCheckoutSessionId(session.getId());
+        orderRepository.save(order);
+
+        return Map.of("url", session.getUrl(), "orderId", order.getId().toString(), "amountRon", String.valueOf(amountCents / 100.0));
+    }
+
+    @Transactional
     public void handleWebhookEvent(String payload, String sigHeader) throws Exception {
         if (stripeProperties.getWebhookSecret() == null || stripeProperties.getWebhookSecret().isBlank()) {
             return;
@@ -135,8 +175,25 @@ public class MarketplacePaymentService {
         orderRepository.save(order);
 
         Product product = productRepository.findById(order.getListingId()).orElseThrow();
-        product.setStatus("SOLD");
-        productRepository.save(product);
+
+        if (order.isRental() && order.getRentalStart() != null && order.getRentalEnd() != null) {
+            product.setStatus("RESERVED");
+            productRepository.save(product);
+            try {
+                reservationService.createReservation(
+                        order.getListingId(),
+                        order.getBuyerId(),
+                        order.getRentalStart(),
+                        order.getRentalEnd()
+                );
+            } catch (IllegalArgumentException ignored) {
+                // Rezervare deja existentă — plata rămâne validă
+            }
+            releaseSellerPayout(order);
+        } else {
+            product.setStatus("SOLD");
+            productRepository.save(product);
+        }
 
         if (order.getOfferId() != null) {
             offerRepository.findById(order.getOfferId()).ifPresent(o -> {
@@ -163,10 +220,24 @@ public class MarketplacePaymentService {
         if (order.getEscrowStatus() != EscrowStatus.SHIPPED && order.getEscrowStatus() != EscrowStatus.DELIVERED) {
             throw new IllegalArgumentException("Comanda nu poate fi confirmată.");
         }
-        captureFunds(order);
-        order.setEscrowStatus(EscrowStatus.COMPLETED);
+        releaseSellerPayout(order);
         order.setDeliveredAt(java.time.LocalDateTime.now());
-        order.setCompletedAt(java.time.LocalDateTime.now());
+        return orderRepository.save(order);
+    }
+
+    /** Seller accepts / releases funds into app balance (Încasează banii). */
+    @Transactional
+    public MarketplaceOrder acceptPayout(Long orderId, Long sellerId) throws Exception {
+        MarketplaceOrder order = getOrderForSeller(orderId, sellerId);
+        if (order.isPayoutCredited()) {
+            return order;
+        }
+        if (order.getEscrowStatus() != EscrowStatus.ESCROW_ACTIVE
+                && order.getEscrowStatus() != EscrowStatus.SHIPPED
+                && order.getEscrowStatus() != EscrowStatus.DELIVERED) {
+            throw new IllegalArgumentException("Fondurile nu pot fi încasate în acest stadiu.");
+        }
+        releaseSellerPayout(order);
         return orderRepository.save(order);
     }
 
@@ -207,6 +278,18 @@ public class MarketplacePaymentService {
         if ("requires_capture".equals(intent.getStatus())) {
             intent.capture(PaymentIntentCaptureParams.builder().build());
         }
+    }
+
+    private void releaseSellerPayout(MarketplaceOrder order) throws Exception {
+        if (order.isPayoutCredited()) {
+            return;
+        }
+        captureFunds(order);
+        walletService.creditSeller(order.getSellerId(), order.getAmountCents(), "order-" + order.getId());
+        order.setPayoutCredited(true);
+        order.setEscrowStatus(EscrowStatus.COMPLETED);
+        order.setCompletedAt(java.time.LocalDateTime.now());
+        orderRepository.save(order);
     }
 
     private Session createEscrowCheckoutSession(

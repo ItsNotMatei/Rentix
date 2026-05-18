@@ -28,6 +28,7 @@ public class AuthResponse {
                 .adresa(user.getAdresa())
                 .banned(user.isBanned())
                 .suspended(user.isSuspended())
+                .balance(user.getBalance())
                 .build();
     }
 }

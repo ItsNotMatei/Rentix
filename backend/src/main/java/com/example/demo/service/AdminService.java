@@ -28,6 +28,8 @@ public class AdminService {
     private final ConversationRepository conversationRepository;
     private final DirectMessageRepository messageRepository;
     private final DataCleanupService dataCleanupService;
+    private final OfferRepository offerRepository;
+    private final ImagineRepository imagineRepository;
 
     public Map<String, Object> getStats() {
         Map<String, Object> stats = new HashMap<>();
@@ -97,6 +99,13 @@ public class AdminService {
     @Transactional
     public void deleteListing(Long id) {
         SecurityUtils.requireRole(UserRole.MODERATOR);
+        if (!productRepository.existsById(id)) {
+            throw new IllegalArgumentException("Anunț inexistent.");
+        }
+        reviewRepository.deleteByAnunt_Id(id);
+        reservationRepository.deleteByAnunt_Id(id);
+        offerRepository.deleteByListingId(id);
+        imagineRepository.deleteByAnunt_Id(id);
         productRepository.deleteById(id);
     }
 
@@ -144,9 +153,21 @@ public class AdminService {
         return data;
     }
 
-    public List<Reservation> allReservations() {
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> allReservations() {
         SecurityUtils.requireRole(UserRole.MODERATOR);
-        return reservationRepository.findAll();
+        return reservationRepository.findAll().stream().map(r -> {
+            Map<String, Object> row = new HashMap<>();
+            row.put("id", r.getId());
+            row.put("anuntId", r.getAnunt() != null ? r.getAnunt().getId() : null);
+            row.put("listingId", r.getAnunt() != null ? r.getAnunt().getId() : null);
+            row.put("userId", r.getUser() != null ? r.getUser().getId() : null);
+            row.put("userName", r.getUser() != null ? r.getUser().getNume() : "—");
+            row.put("startDate", r.getStartDate() != null ? r.getStartDate().toString() : null);
+            row.put("endDate", r.getEndDate() != null ? r.getEndDate().toString() : null);
+            row.put("status", r.getStatus() != null ? r.getStatus().name() : "—");
+            return row;
+        }).toList();
     }
 
     public List<Map<String, Object>> allConversations() {

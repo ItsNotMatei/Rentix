@@ -17,4 +17,5 @@ public class UserPublicDto {
     private String adresa;
     private boolean banned;
     private boolean suspended;
+    private double balance;
 }

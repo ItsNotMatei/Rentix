@@ -53,4 +53,16 @@ public class MarketplaceOrder {
     private LocalDateTime shippedAt;
     private LocalDateTime deliveredAt;
     private LocalDateTime completedAt;
+
+    @Column(name = "rental", nullable = false)
+    private boolean rental = false;
+
+    @Column(name = "rental_start")
+    private java.time.LocalDate rentalStart;
+
+    @Column(name = "rental_end")
+    private java.time.LocalDate rentalEnd;
+
+    @Column(name = "payout_credited", nullable = false)
+    private boolean payoutCredited = false;
 }

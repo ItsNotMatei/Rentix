@@ -15,6 +15,12 @@ export const shipOrder = (orderId) =>
 export const confirmDelivery = (orderId) =>
     api.post(`/api/payments/orders/${orderId}/confirm-delivery`);
 
+export const acceptPayout = (orderId) =>
+    api.post(`/api/payments/orders/${orderId}/accept-payout`).then((r) => r.data);
+
+export const rentalCheckout = (listingId, startDate, endDate) =>
+    api.post(`/api/payments/rental-checkout?listingId=${listingId}&startDate=${startDate}&endDate=${endDate}`).then((r) => r.data);
+
 export const createOffer = (listingId, amount, conversationId) =>
     api.post('/api/offers', { listingId, amount, conversationId }).then(r => r.data);
 

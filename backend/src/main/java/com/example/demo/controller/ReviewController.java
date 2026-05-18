@@ -40,8 +40,17 @@ public class ReviewController {
 
     @GetMapping("/{productId}/can-review")
     public ResponseEntity<?> canReview(@PathVariable Long productId) {
-        Long userId = SecurityUtils.currentUserId();
-        boolean can = reviewService.canReviewProduct(userId, productId);
-        return ResponseEntity.ok(Map.of("canReview", can));
+        try {
+            Long userId = SecurityUtils.currentUserId();
+            boolean can = reviewService.canReviewProduct(userId, productId);
+            boolean already = reviewService.hasUserReviewed(productId, userId);
+            return ResponseEntity.ok(Map.of(
+                    "canReview", can && !already,
+                    "authenticated", true,
+                    "alreadyReviewed", already
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.ok(Map.of("canReview", false, "authenticated", false));
+        }
     }
 }

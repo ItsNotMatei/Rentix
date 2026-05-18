@@ -88,6 +88,26 @@ export default function AdminDashboard() {
   const askDeleteListing = (id) => setConfirm({ open: true, type: 'listing', id })
   const askDeleteReview = (id) => setConfirm({ open: true, type: 'review', id })
 
+  const handleBanUser = async (userId) => {
+    try {
+      await api.patch(`/api/admin/users/${userId}/ban`, { reason: 'Încălcare reguli platformă' })
+      toast.success('Utilizator blocat.')
+      loadTab()
+    } catch (err) {
+      notifyError(err, 'Blocarea a eșuat.')
+    }
+  }
+
+  const handleUnbanUser = async (userId) => {
+    try {
+      await api.patch(`/api/admin/users/${userId}/unban`)
+      toast.success('Utilizator deblocat.')
+      loadTab()
+    } catch (err) {
+      notifyError(err, 'Deblocarea a eșuat.')
+    }
+  }
+
   const handleConfirmDelete = async () => {
     if (!confirm.id) return
     setDeleteLoading(true)
@@ -188,7 +208,24 @@ export default function AdminDashboard() {
         )}
 
         {tab === 'users' && (
-          <AdminTable headers={['ID', 'Nume', 'Email', 'Rol']} rows={users.map((u) => [u.id, u.nume, u.email, u.role])} />
+          <AdminTable
+            headers={['ID', 'Nume', 'Email', 'Rol', 'Acțiuni']}
+            rows={users.map((u) => [
+              u.id,
+              u.nume,
+              u.email,
+              u.role,
+              hasRole('ADMIN') ? (
+                <span key={`actions-${u.id}`} className="flex flex-wrap gap-2">
+                  {!u.banned ? (
+                    <button type="button" className="text-red-600 font-medium" onClick={() => handleBanUser(u.id)}>Blochează</button>
+                  ) : (
+                    <button type="button" className="text-emerald-700 font-medium" onClick={() => handleUnbanUser(u.id)}>Deblochează</button>
+                  )}
+                </span>
+              ) : '—',
+            ])}
+          />
         )}
 
         {tab === 'listings' && (
@@ -232,20 +269,20 @@ export default function AdminDashboard() {
         {tab === 'reports' && (
           <AdminTable
             headers={['ID', 'Motiv', 'Status', 'Anunț']}
-            rows={(reports || []).map((r) => [r.id, r.reason || r.motiv || '—', r.status || '—', r.listingId || r.productId || '—'])}
+            rows={(reports || []).map((r) => [r.id, r.reason || r.motiv || '—', r.status || '—', r.targetId || r.listingId || r.productId || '—'])}
           />
         )}
 
         {tab === 'bookings' && (
           <AdminTable
             headers={['ID', 'Anunț', 'Utilizator', 'Perioadă', 'Status']}
-            rows={(bookings || []).map((b) => [
+            rows={Array.isArray(bookings) ? bookings.map((b) => [
               b.id,
-              b.anuntId || b.listingId || '—',
-              b.userId || b.userName || '—',
+              b.anuntId ?? b.listingId ?? '—',
+              b.userName ?? b.userId ?? '—',
               b.startDate && b.endDate ? `${b.startDate} → ${b.endDate}` : '—',
-              b.status || '—',
-            ])}
+              b.status ?? '—',
+            ]) : []}
           />
         )}
 
