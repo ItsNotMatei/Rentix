@@ -49,6 +49,27 @@ public class AuthService {
 
     public LoginResultDto initiateLogin(LoginRequest request) {
         User user = validateCredentials(request);
+
+        // Preluăm rolul utilizatorului curent
+        String userRole = user.getRole();
+
+        // Verificăm dacă utilizatorul face parte din staff (ADMIN, MODERATOR, SUPER_ADMIN)
+        boolean isStaff = "ADMIN".equals(userRole)
+                || "MODERATOR".equals(userRole)
+                || "SUPER_ADMIN".equals(userRole);
+
+        if (isStaff) {
+            // Generăm direct token-urile de acces și facem bypass la 2FA
+            AuthResponse authResponse = buildAuthResponse(user);
+
+            return LoginResultDto.builder()
+                    .requiresTwoFactor(false)
+                    .authResponse(authResponse)
+                    .message("Logare administrativă reușită.")
+                    .build();
+        }
+
+        // Logica normală cu 2FA pe e-mail pentru utilizatorii standard (USER)
         String challengeId = authTokenService.createTwoFactorChallenge(user);
         return LoginResultDto.builder()
                 .requiresTwoFactor(true)

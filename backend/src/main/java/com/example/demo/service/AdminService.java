@@ -27,6 +27,7 @@ public class AdminService {
     private final ModerationReportRepository reportRepository;
     private final ConversationRepository conversationRepository;
     private final DirectMessageRepository messageRepository;
+    private final DataCleanupService dataCleanupService;
 
     public Map<String, Object> getStats() {
         Map<String, Object> stats = new HashMap<>();
@@ -177,5 +178,11 @@ public class AdminService {
         report.setReporterId(reporterId);
         report.setStatus("OPEN");
         return reportRepository.save(report);
+    }
+
+    @Transactional
+    public void cleanupDemoData() {
+        SecurityUtils.requireRole(UserRole.SUPER_ADMIN);
+        dataCleanupService.cleanupAllExceptStaff();
     }
 }

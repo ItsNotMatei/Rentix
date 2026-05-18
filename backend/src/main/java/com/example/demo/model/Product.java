@@ -22,6 +22,14 @@ public class Product {
     private String tip;
     private String status;
 
+    /** Categorie catalog: Haine, Gadgeturi, etc. */
+    @Column(length = 50)
+    private String categorie;
+
+    /** Stare produs: NOU, PUTIN_FOLOSIT, FOLOSIT, etc. */
+    @Column(name = "stare_produs", length = 30)
+    private String stareProdus;
+
     @Column(name = "user_id")
     private Long userId;
 

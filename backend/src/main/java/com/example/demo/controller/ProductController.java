@@ -49,6 +49,11 @@ public class ProductController {
             String adresa = (String) payload.get("adresa");
             String tip = (String) payload.get("tip");
             String status = (String) payload.get("status");
+            String categorie = (String) payload.get("categorie");
+            String stareProdus = (String) payload.get("stareProdus");
+            if (stareProdus == null) {
+                stareProdus = (String) payload.get("stare");
+            }
             Long userId = SecurityUtils.currentUserId();
             String imagineUrl = (String) payload.get("imagineUrl");
 
@@ -65,6 +70,8 @@ public class ProductController {
             product.setAdresa(adresa);
             product.setTip(tip);
             product.setStatus(status != null ? status : "AVAILABLE");
+            product.setCategorie(categorie);
+            product.setStareProdus(stareProdus);
             product.setUserId(userId);
             product.setPret(pret);
 
@@ -100,10 +107,45 @@ public class ProductController {
         }
         List<ImagineAnunt> images = imagineRepository.findAll();
         List<Map<String, Object>> results = productRepository.findAll().stream()
-                .filter(p -> contains(p.getTitlu(), q) || contains(p.getDescriere(), q) || contains(p.getAdresa(), q))
+                .filter(p -> contains(p.getTitlu(), q)
+                        || contains(p.getDescriere(), q)
+                        || contains(p.getAdresa(), q)
+                        || contains(p.getCategorie(), q))
                 .map(p -> toProductMap(p, images))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/by-category")
+    public ResponseEntity<List<Map<String, Object>>> byCategory(@RequestParam String categorie) {
+        String cat = categorie == null ? "" : categorie.trim();
+        if (cat.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        List<ImagineAnunt> images = imagineRepository.findAll();
+        List<Map<String, Object>> results = productRepository.findAll().stream()
+                .filter(p -> p.getCategorie() != null && p.getCategorie().equalsIgnoreCase(cat))
+                .map(p -> toProductMap(p, images))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(results);
+    }
+
+    @GetMapping("/meta/categories")
+    public ResponseEntity<List<String>> listCategories() {
+        return ResponseEntity.ok(List.of(
+                "Haine", "Gadgeturi", "Scule", "Sport", "Console", "Auto", "Evenimente", "Casă & grădină", "Altele"
+        ));
+    }
+
+    @GetMapping("/meta/conditions")
+    public ResponseEntity<List<Map<String, String>>> listConditions() {
+        return ResponseEntity.ok(List.of(
+                Map.of("value", "NOU", "label", "Nou"),
+                Map.of("value", "CA_NOU", "label", "Ca nou"),
+                Map.of("value", "PUTIN_FOLOSIT", "label", "Puțin folosit"),
+                Map.of("value", "FOLOSIT", "label", "Folosit"),
+                Map.of("value", "UZAT", "label", "Uzat / defecte minore")
+        ));
     }
 
     @GetMapping("/{id}")
@@ -173,6 +215,8 @@ public class ProductController {
         productMap.put("latitude", p.getLatitude());
         productMap.put("longitude", p.getLongitude());
         productMap.put("tip", p.getTip());
+        productMap.put("categorie", p.getCategorie());
+        productMap.put("stareProdus", p.getStareProdus());
         productMap.put("status", p.getStatus());
         productMap.put("userId", p.getUserId());
 

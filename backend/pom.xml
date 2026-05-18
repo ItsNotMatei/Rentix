@@ -54,6 +54,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.0.2</version>
+        </dependency>
 
         <dependency>
             <groupId>com.mysql</groupId>
@@ -134,6 +139,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
+                    <workingDirectory>${project.basedir}</workingDirectory>
                     <excludes>
                         <exclude>
                             <groupId>org.projectlombok</groupId>

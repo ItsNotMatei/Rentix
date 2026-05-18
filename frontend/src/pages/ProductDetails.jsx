@@ -17,6 +17,7 @@ import { toast } from '@/lib/toast'
 import { buyNow } from '@/services/paymentService'
 import BookingCalendar from '@/components/booking/BookingCalendar'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import { conditionLabel } from '@/lib/listingMeta'
 
 export default function ProductDetails() {
   const { id } = useParams()
@@ -165,7 +166,11 @@ export default function ProductDetails() {
           <div className="space-y-5">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <Badge>{product.tip || 'Închiriere'}</Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Badge>{product.tip || 'Închiriere'}</Badge>
+                  {product.categorie && <Badge variant="secondary">{product.categorie}</Badge>}
+                  {product.stareProdus && <Badge variant="warning">{conditionLabel(product.stareProdus)}</Badge>}
+                </div>
                 <h1 className="mt-2 text-3xl font-bold">{product.titlu}</h1>
                 <p className="mt-2 flex flex-wrap items-center gap-3 text-sm text-text-muted">
                   <span className="flex items-center gap-1"><Star size={14} className="fill-amber-400 text-amber-400" /> {product.averageRating || 0}</span>

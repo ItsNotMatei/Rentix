@@ -73,6 +73,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/payments/webhook", "/api/identity/webhook").permitAll()
                         .requestMatchers("/chat/**", "/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/products/by-category", "/api/products/meta/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/anunturi", "/api/anunturi/search").permitAll()
                         .requestMatchers(HttpMethod.GET, "/reservations/availability/**").permitAll()

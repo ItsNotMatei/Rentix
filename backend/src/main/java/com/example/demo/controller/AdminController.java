@@ -117,4 +117,10 @@ public class AdminController {
     public ResponseEntity<?> conversations() {
         return ResponseEntity.ok(adminService.allConversations());
     }
+
+    @PostMapping("/cleanup-data")
+    public ResponseEntity<Map<String, String>> cleanupData() {
+        adminService.cleanupDemoData();
+        return ResponseEntity.ok(Map.of("message", "Datele demo au fost șterse. Conturile staff au fost păstrate."));
+    }
 }

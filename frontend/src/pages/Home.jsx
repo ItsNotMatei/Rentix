@@ -7,8 +7,7 @@ import ListingCard from '@/components/listing/ListingCard'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import api, { getStoredUser, hasRole } from '@/services/api'
-
-const CATEGORIES = ['Haine', 'Gadgeturi', 'Scule', 'Sport', 'Console', 'Auto', 'Evenimente']
+import { LISTING_CATEGORIES } from '@/lib/listingMeta'
 
 export default function Home() {
   const navigate = useNavigate()
@@ -67,11 +66,11 @@ export default function Home() {
       <section className="container-rentix pb-8">
         <h2 className="mb-4 text-xl font-semibold">Categorii populare</h2>
         <div className="flex flex-wrap gap-2">
-          {CATEGORIES.map((cat) => (
+          {LISTING_CATEGORIES.map((cat) => (
             <button
               key={cat}
               type="button"
-              onClick={() => navigate(`/anunturi?search=${encodeURIComponent(cat)}`)}
+              onClick={() => navigate(`/anunturi?categorie=${encodeURIComponent(cat)}`)}
               className="rounded-full border border-border bg-white px-4 py-2 text-sm font-medium transition hover:border-brand-300 hover:bg-brand-50"
             >
               {cat}

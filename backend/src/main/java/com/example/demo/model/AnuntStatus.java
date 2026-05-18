@@ -4,5 +4,6 @@ public enum AnuntStatus {
     AVAILABLE,
     RESERVED,
     RENTED,
-    PENDING_PAYMENT
+    PENDING_PAYMENT,
+    SOLD
 }

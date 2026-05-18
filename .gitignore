@@ -10,3 +10,10 @@ uploads/
 dist/
 build/
 .env
+.env.*
+!.env.example
+backend/.env
+backend/application-local.properties
+backend/src/main/resources/application-local.properties
+**/target/
+backend/target/
