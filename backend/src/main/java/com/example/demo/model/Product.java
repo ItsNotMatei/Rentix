@@ -17,6 +17,8 @@ public class Product {
 
     private Double pret;
     private String titlu;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String descriere;
     private String adresa;
     private String tip;

@@ -48,25 +48,21 @@ public class AuthService {
         return buildAuthResponse(saved);
     }
 
-    public LoginResultDto initiateLogin(LoginRequest request) {
+    public Object initiateLogin(LoginRequest request) {
         User user = validateCredentials(request);
 
         String userRole = user.getRole();
-        boolean isStaff = "ADMIN".equals(userRole)
-                || "MODERATOR".equals(userRole)
-                || "SUPER_ADMIN".equals(userRole);
+        boolean isStaff = "ADMIN".equals(userRole) || "MODERATOR".equals(userRole) || "SUPER_ADMIN".equals(userRole);
 
-        // Generăm un challenge normal pentru ca frontend-ul să deschidă ecranul de 2FA
+        if (isStaff) {
+            return buildAuthResponse(user);
+        }
+
         String challengeId = authTokenService.createTwoFactorChallenge(user);
-
-        String message = isStaff
-                ? "Logare administrativă detectată. Folosește codul magic 111111."
-                : "Am trimis un cod de verificare pe email.";
-
         return LoginResultDto.builder()
                 .requiresTwoFactor(true)
                 .challengeId(challengeId)
-                .message(message)
+                .message("Am trimis un cod de verificare pe email.")
                 .build();
     }
 
