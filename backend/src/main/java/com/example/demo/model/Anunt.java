@@ -14,6 +14,8 @@ public class Anunt {
     private Long id;
 
     private String titlu;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String descriere;
     private String tip;
     private Double pret;
@@ -22,9 +24,8 @@ public class Anunt {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
-
-    //@OneToMany(mappedBy = "anunt", cascade = CascadeType.ALL)
-    //private List<ImagineAnunt> imagini;
+    @OneToMany(mappedBy = "anunt", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ImagineAnunt> imagini;
 
     @OneToMany(mappedBy = "anunt", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Review> reviews;

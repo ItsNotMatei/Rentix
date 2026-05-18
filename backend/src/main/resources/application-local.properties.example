@@ -1,0 +1,10 @@
+# Copiază ca application-local.properties (gitignored) pentru development local
+RENTIX_DB_PASSWORD=your_local_mysql_password
+RENTIX_JWT_SECRET=local_dev_jwt_secret_min_32_characters_long
+
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+
+RENTIX_MAIL_ENABLED=false
+SPRING_MAIL_USERNAME=
+SPRING_MAIL_PASSWORD=

