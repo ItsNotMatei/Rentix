@@ -6,4 +6,6 @@ import java.util.Optional;
 
 public interface ImagineRepository extends JpaRepository<ImagineAnunt, Long> {
     Optional<ImagineAnunt> findByAnuntId(Long anuntId);
+
+    void deleteByAnunt_Id(Long anuntId);
 }

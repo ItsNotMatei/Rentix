@@ -57,4 +57,8 @@ public class User {
     private List<Anunt> anunturi;
     private String telefon;
     private String adresa;
+
+    /** Sold disponibil în RON (creditează la finalizarea tranzacțiilor). */
+    @Column(nullable = false)
+    private double balance = 0.0;
 }

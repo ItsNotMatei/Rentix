@@ -2,6 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 
+const NOMINATIM_HEADERS = {
+  'Accept-Language': 'ro',
+  'User-Agent': 'RentixApp/1.0 (contact@rentix.test)',
+}
+
+/**
+ * @param {object} props
+ * @param {string} props.value
+ * @param {(address: string, coords?: { lat: number, lng: number } | null) => void} props.onChange
+ */
 export default function AddressAutocomplete({ value, onChange, placeholder = 'Oraș, stradă...', className }) {
   const [suggestions, setSuggestions] = useState([])
   const [open, setOpen] = useState(false)
@@ -22,10 +32,14 @@ export default function AddressAutocomplete({ value, onChange, placeholder = 'Or
     }
     const t = setTimeout(async () => {
       try {
-        const q = encodeURIComponent(`${value}, Romania`)
+        const q = encodeURIComponent(
+          value.toLowerCase().includes('romania') || value.toLowerCase().includes('românia')
+            ? value
+            : `${value}, Romania`
+        )
         const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=0`,
-          { headers: { 'Accept-Language': 'ro' } }
+          `https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&countrycodes=ro`,
+          { headers: NOMINATIM_HEADERS }
         )
         const data = await res.json()
         setSuggestions(data || [])
@@ -38,10 +52,10 @@ export default function AddressAutocomplete({ value, onChange, placeholder = 'Or
   }, [value])
 
   return (
-    <div ref={ref} className={cn('relative', className)}>
+    <div className={cn('relative', className)}>
       <Input
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value, null)}
         onFocus={() => suggestions.length > 0 && setOpen(true)}
         placeholder={placeholder}
       />
@@ -53,7 +67,12 @@ export default function AddressAutocomplete({ value, onChange, placeholder = 'Or
                 type="button"
                 className="w-full px-3 py-2 text-left text-sm hover:bg-brand-50"
                 onClick={() => {
-                  onChange(s.display_name)
+                  const lat = parseFloat(s.lat)
+                  const lng = parseFloat(s.lon)
+                  onChange(
+                    s.display_name,
+                    Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null
+                  )
                   setOpen(false)
                 }}
               >

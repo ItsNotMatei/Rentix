@@ -14,7 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import api, { getStoredUser, hasRole } from '@/services/api'
 import { notifyError } from '@/lib/errors'
 import { toast } from '@/lib/toast'
-import { buyNow } from '@/services/paymentService'
+import { buyNow, rentalCheckout } from '@/services/paymentService'
 import BookingCalendar from '@/components/booking/BookingCalendar'
 import ConfirmDialog from '@/components/ConfirmDialog'
 import { conditionLabel } from '@/lib/listingMeta'
@@ -35,6 +35,9 @@ export default function ProductDetails() {
   const [calendarRefresh, setCalendarRefresh] = useState(0)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [canReview, setCanReview] = useState(false)
+  const [reviewBlocked, setReviewBlocked] = useState('')
+  const [rentLoading, setRentLoading] = useState(false)
   const canModerateDelete = hasRole('MODERATOR')
 
   const fetchProduct = async () => {
@@ -52,6 +55,23 @@ export default function ProductDetails() {
     Promise.all([fetchProduct(), fetchReviews()]).finally(() => setLoading(false))
   }, [id])
 
+  useEffect(() => {
+    const user = getStoredUser()
+    if (!user?.id) {
+      setCanReview(false)
+      setReviewBlocked('Autentifică-te pentru a lăsa o recenzie.')
+      return
+    }
+    api.get(`/api/reviews/${id}/can-review`)
+      .then((res) => {
+        setCanReview(res.data.canReview === true)
+        if (res.data.alreadyReviewed) setReviewBlocked('Ai lăsat deja o recenzie.')
+        else if (!res.data.canReview) setReviewBlocked('Poți recenza după o rezervare sau comandă finalizată.')
+        else setReviewBlocked('')
+      })
+      .catch(() => setCanReview(false))
+  }, [id])
+
   const handleShare = async () => {
     try {
       await navigator.share({ title: product?.titlu, text: product?.descriere, url: window.location.href })
@@ -61,11 +81,23 @@ export default function ProductDetails() {
   }
 
   const handleReview = async () => {
+    const user = getStoredUser()
+    if (!user?.id) {
+      navigate('/login')
+      return
+    }
+    if (!canReview) {
+      toast.error(reviewBlocked || 'Nu poți lăsa o recenzie acum.')
+      return
+    }
     try {
       await api.post(`/api/reviews/${id}`, { rating, comment })
       setComment('')
+      setCanReview(false)
+      setReviewBlocked('Ai lăsat deja o recenzie.')
       fetchReviews()
       fetchProduct()
+      toast.success('Recenzia a fost publicată.')
     } catch (err) {
       notifyError(err, 'Nu s-a putut salva recenzia.')
     }
@@ -82,15 +114,26 @@ export default function ProductDetails() {
       navigate('/login')
       return
     }
+    if (!user?.isVerified && !user?.verified) {
+      toast.info('Verifică-ți identitatea din profil înainte de a închiria.')
+      navigate('/profile?tab=cont')
+      return
+    }
+    setRentLoading(true)
     try {
-      const params = new URLSearchParams({ anuntId: id, startDate, endDate })
-      await api.post(`/reservations?${params}`)
+      const res = await rentalCheckout(id, startDate, endDate)
+      if (res.url) {
+        window.location.href = res.url
+        return
+      }
       toast.success('Rezervare realizată cu succes!')
       setCalendarRefresh((k) => k + 1)
       setStartDate('')
       setEndDate('')
     } catch (err) {
-      setBookingError(err.response?.data?.message || 'Perioada selectată nu este disponibilă.')
+      setBookingError(err.response?.data?.message || err.friendlyMessage || 'Perioada selectată nu este disponibilă.')
+    } finally {
+      setRentLoading(false)
     }
   }
 
@@ -215,7 +258,9 @@ export default function ProductDetails() {
                     </div>
                     {bookingError && <p className="text-sm text-red-600">{bookingError}</p>}
                     <p className="flex items-center gap-1 text-xs text-text-muted"><Clock size={14} /> Predare 09:00–18:00</p>
-                    <Button className="w-full" onClick={handleBooking}>Închiriază acum</Button>
+                    <Button className="w-full" onClick={handleBooking} disabled={rentLoading}>
+                      {rentLoading ? 'Se redirecționează la plată...' : 'Închiriază acum'}
+                    </Button>
                   </div>
                 )}
                 <p className="flex items-center gap-2 text-xs text-emerald-700"><ShieldCheck size={16} /> Protecție Rentix inclusă</p>
@@ -250,11 +295,17 @@ export default function ProductDetails() {
           <h2 className="mb-4 text-xl font-semibold">Recenzii</h2>
           <Card className="mb-4">
             <CardContent className="grid gap-3 pt-6 sm:grid-cols-[100px_1fr_auto]">
-              <select value={rating} onChange={(e) => setRating(Number(e.target.value))} className="rounded-xl border border-border px-3 py-2">
-                {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} ★</option>)}
-              </select>
-              <Textarea placeholder="Scrie o recenzie..." value={comment} onChange={(e) => setComment(e.target.value)} />
-              <Button onClick={handleReview}>Trimite</Button>
+              {canReview ? (
+                <>
+                  <select value={rating} onChange={(e) => setRating(Number(e.target.value))} className="rounded-xl border border-border px-3 py-2">
+                    {[5, 4, 3, 2, 1].map((n) => <option key={n} value={n}>{n} ★</option>)}
+                  </select>
+                  <Textarea placeholder="Scrie o recenzie..." value={comment} onChange={(e) => setComment(e.target.value)} />
+                  <Button onClick={handleReview}>Trimite</Button>
+                </>
+              ) : (
+                <p className="col-span-full text-sm text-text-muted sm:col-span-3">{reviewBlocked || 'Recenziile sunt disponibile după o tranzacție.'}</p>
+              )}
             </CardContent>
           </Card>
           <div className="space-y-3">

@@ -36,4 +36,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             Long anuntId,
             com.example.demo.model.ReservationStatus status
     );
+
+    void deleteByAnunt_Id(Long anuntId);
 }

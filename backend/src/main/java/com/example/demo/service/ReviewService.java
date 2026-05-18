@@ -63,6 +63,14 @@ public class ReviewService {
                 userId, productId, ReservationStatus.COMPLETED)) {
             return true;
         }
+        if (reservationRepository.existsByUser_IdAndAnunt_IdAndStatus(
+                userId, productId, ReservationStatus.ACTIVE)) {
+            return true;
+        }
+        if (reservationRepository.existsByUser_IdAndAnunt_IdAndStatus(
+                userId, productId, ReservationStatus.CONFIRMED)) {
+            return true;
+        }
         LocalDate today = LocalDate.now();
         return reservationRepository.findByAnuntId(productId).stream()
                 .anyMatch(r -> r.getUser() != null
@@ -74,8 +82,19 @@ public class ReviewService {
 
     public List<ReviewDto> getReviewDtos(Long productId) {
         return reviewRepository.findByAnunt_Id(productId).stream()
-                .map(r -> toDto(r, canReviewProduct(r.getUser().getId(), productId)))
+                .map(r -> toDto(r, hasVerifiedTransaction(r.getUser().getId(), productId)))
                 .collect(Collectors.toList());
+    }
+
+    private boolean hasVerifiedTransaction(Long userId, Long productId) {
+        return orderRepository.existsByBuyerIdAndListingIdAndEscrowStatus(userId, productId, EscrowStatus.COMPLETED)
+                || reservationRepository.existsByUser_IdAndAnunt_IdAndStatus(userId, productId, ReservationStatus.COMPLETED)
+                || reservationRepository.existsByUser_IdAndAnunt_IdAndStatus(userId, productId, ReservationStatus.ACTIVE)
+                || reservationRepository.existsByUser_IdAndAnunt_IdAndStatus(userId, productId, ReservationStatus.CONFIRMED);
+    }
+
+    public boolean hasUserReviewed(Long productId, Long userId) {
+        return reviewRepository.existsByUser_IdAndAnunt_Id(userId, productId);
     }
 
     public Map<String, Object> getReviewStats(Long productId) {

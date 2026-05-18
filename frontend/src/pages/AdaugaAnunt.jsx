@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout'
 import { Button } from '@/components/ui/button'
 import { Input, Textarea } from '@/components/ui/input'
 import AddressAutocomplete from '@/components/AddressAutocomplete'
+import ProductMap from '@/components/maps/ProductMap'
 import api, { getStoredUser } from '@/services/api'
 import { CLOUDINARY_CLOUD, CLOUDINARY_PRESET } from '@/lib/utils'
 import { LISTING_CATEGORIES, PRODUCT_CONDITIONS } from '@/lib/listingMeta'
@@ -20,6 +21,8 @@ export default function AdaugaAnunt() {
   const [pret, setPret] = useState('')
   const [descriere, setDescriere] = useState('')
   const [adresa, setAdresa] = useState('')
+  const [latitude, setLatitude] = useState(null)
+  const [longitude, setLongitude] = useState(null)
   const [tip, setTip] = useState('Închiriere')
   const [categorie, setCategorie] = useState(LISTING_CATEGORIES[0])
   const [stareProdus, setStareProdus] = useState('PUTIN_FOLOSIT')
@@ -40,6 +43,8 @@ export default function AdaugaAnunt() {
       setPret(d.pret || '')
       setDescriere(d.descriere || '')
       setAdresa(d.adresa || '')
+      setLatitude(d.latitude ?? null)
+      setLongitude(d.longitude ?? null)
       setTip(d.tip || 'Închiriere')
       setCategorie(d.categorie || LISTING_CATEGORIES[0])
       setStareProdus(d.stareProdus || 'PUTIN_FOLOSIT')
@@ -60,11 +65,22 @@ export default function AdaugaAnunt() {
       const urls = images.filter((i) => i.url).map((i) => i.url)
       localStorage.setItem(
         'rentix-listing-draft',
-        JSON.stringify({ titlu, pret, descriere, adresa, tip, categorie, stareProdus, imageUrls: urls })
+        JSON.stringify({ titlu, pret, descriere, adresa, latitude, longitude, tip, categorie, stareProdus, imageUrls: urls })
       )
     }, 500)
     return () => clearTimeout(t)
-  }, [titlu, pret, descriere, adresa, tip, categorie, stareProdus, images])
+  }, [titlu, pret, descriere, adresa, latitude, longitude, tip, categorie, stareProdus, images])
+
+  const handleAddressChange = (text, coords) => {
+    setAdresa(text)
+    if (coords?.lat != null && coords?.lng != null) {
+      setLatitude(coords.lat)
+      setLongitude(coords.lng)
+    } else {
+      setLatitude(null)
+      setLongitude(null)
+    }
+  }
 
   const addFiles = (files) => {
     const next = [...images]
@@ -88,6 +104,10 @@ export default function AdaugaAnunt() {
       toast.error('Completează titlul, prețul, categoria și locația.')
       return
     }
+    if (latitude == null || longitude == null) {
+      toast.error('Selectează locația din lista de sugestii pentru a fixa pinul pe hartă.')
+      return
+    }
     setUploading(true)
     try {
       const urls = []
@@ -101,6 +121,8 @@ export default function AdaugaAnunt() {
         pret: parseFloat(pret),
         descriere,
         adresa,
+        latitude,
+        longitude,
         tip,
         categorie,
         stareProdus,
@@ -187,8 +209,18 @@ export default function AdaugaAnunt() {
         )}
 
         {step === 2 && (
-          <div className="mt-6">
-            <AddressAutocomplete value={adresa} onChange={setAdresa} placeholder="Caută adresă în România..." />
+          <div className="mt-6 space-y-4">
+            <p className="text-sm text-text-muted">
+              Caută și <strong>alege o sugestie</strong> din listă — pinul va fi plasat exact acolo.
+            </p>
+            <AddressAutocomplete value={adresa} onChange={handleAddressChange} placeholder="Caută adresă în România..." />
+            {latitude != null && longitude != null ? (
+              <ProductMap address={adresa} latitude={latitude} longitude={longitude} />
+            ) : (
+              <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+                Pinul apare după ce selectezi o adresă din sugestii.
+              </p>
+            )}
           </div>
         )}
 
