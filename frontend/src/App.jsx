@@ -15,6 +15,7 @@ import AnunturiList from './pages/AnunturiList'
 import Chat from './pages/Chat'
 import Checkout from './pages/Checkout'
 import CheckoutSuccess from './pages/CheckoutSuccess'
+import CheckoutCancel from './pages/CheckoutCancel'
 import AdminDashboard from './pages/AdminDashboard'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
@@ -40,7 +41,7 @@ function App() {
         <Route path="/anunturi" element={<AnunturiList />} />
         <Route path="/checkout/:id" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
         <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
-        <Route path="/checkout/cancel" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+        <Route path="/checkout/cancel" element={<ProtectedRoute><CheckoutCancel /></ProtectedRoute>} />
       </Routes>
     </Router>
   )

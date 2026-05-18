@@ -71,6 +71,12 @@ public class MarketplacePaymentController {
         return ResponseEntity.ok(order);
     }
 
+    @PostMapping("/orders/{id}/cancel-checkout")
+    public ResponseEntity<?> cancelCheckout(@PathVariable Long id) {
+        paymentService.cancelCheckout(id, SecurityUtils.currentUserId());
+        return ResponseEntity.ok(Map.of("message", "Checkout anulat. Produsul este din nou disponibil."));
+    }
+
     @PostMapping("/orders/{id}/dispute")
     public ResponseEntity<?> dispute(@PathVariable Long id, @RequestBody Map<String, String> body) {
         return ResponseEntity.ok(paymentService.openDispute(id, SecurityUtils.currentUserId(), body.get("reason")));
