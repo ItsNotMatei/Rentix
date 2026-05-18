@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ public class MarketplacePaymentService {
     @Transactional
     public Map<String, String> createBuyNowCheckout(Long listingId, Long buyerId) throws Exception {
         verificationGuard.requireVerified(buyerId);
+        releaseAbandonedCheckouts(listingId);
         Product product = productRepository.findById(listingId).orElseThrow();
         validateAvailable(product);
         if (product.getUserId().equals(buyerId)) {
@@ -72,10 +74,23 @@ public class MarketplacePaymentService {
 
         order.setStripeCheckoutSessionId(session.getId());
         orderRepository.save(order);
-        product.setStatus("PENDING_PAYMENT");
-        productRepository.save(product);
 
         return Map.of("url", session.getUrl(), "orderId", order.getId().toString());
+    }
+
+    /** Anulează checkout Stripe nefinalizat și eliberează produsul. */
+    @Transactional
+    public void cancelCheckout(Long orderId, Long userId) {
+        MarketplaceOrder order = orderRepository.findById(orderId).orElseThrow();
+        if (!order.getBuyerId().equals(userId)) {
+            throw new IllegalArgumentException("Nu poți anula această comandă.");
+        }
+        if (order.getEscrowStatus() != EscrowStatus.PENDING_PAYMENT) {
+            return;
+        }
+        order.setEscrowStatus(EscrowStatus.CANCELLED);
+        orderRepository.save(order);
+        restoreListingAvailabilityIfIdle(order.getListingId());
     }
 
     @Transactional
@@ -343,20 +358,69 @@ public class MarketplacePaymentService {
     }
 
     private void validateAvailable(Product product) {
-        String status = product.getStatus() != null ? product.getStatus().toUpperCase() : "AVAILABLE";
-        if (List.of("SOLD", "RESERVED", "PENDING_PAYMENT").contains(status)) {
-            throw new IllegalArgumentException("Produsul nu mai este disponibil.");
+        releaseAbandonedCheckouts(product.getId());
+        Product fresh = productRepository.findById(product.getId()).orElse(product);
+        String status = fresh.getStatus() != null ? fresh.getStatus().toUpperCase() : "AVAILABLE";
+        if ("SOLD".equals(status)) {
+            throw new IllegalArgumentException("Produsul a fost deja vândut.");
+        }
+        if ("RESERVED".equals(status)) {
+            throw new IllegalArgumentException("Produsul este rezervat (ofertă acceptată sau închiriere activă).");
+        }
+        if ("PENDING_PAYMENT".equals(status)) {
+            restoreListingAvailabilityIfIdle(fresh.getId());
+            fresh = productRepository.findById(product.getId()).orElse(fresh);
+            status = fresh.getStatus() != null ? fresh.getStatus().toUpperCase() : "AVAILABLE";
+            if ("PENDING_PAYMENT".equals(status)) {
+                throw new IllegalArgumentException("Produsul nu mai este disponibil.");
+            }
         }
     }
 
     private void preventDuplicateOrder(Long listingId) {
         List<EscrowStatus> blocking = List.of(
-                EscrowStatus.PENDING_PAYMENT, EscrowStatus.PAID,
-                EscrowStatus.ESCROW_ACTIVE, EscrowStatus.SHIPPED
+                EscrowStatus.PAID, EscrowStatus.ESCROW_ACTIVE, EscrowStatus.SHIPPED
         );
         if (orderRepository.existsByListingIdAndEscrowStatusIn(listingId, blocking)) {
             throw new IllegalArgumentException("Există deja o tranzacție activă pentru acest produs.");
         }
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(30);
+        boolean recentPending = orderRepository
+                .findByListingIdAndEscrowStatus(listingId, EscrowStatus.PENDING_PAYMENT)
+                .stream()
+                .anyMatch(o -> o.getCreatedAt() != null && !o.getCreatedAt().isBefore(threshold));
+        if (recentPending) {
+            throw new IllegalArgumentException(
+                    "Există deja o plată în curs pentru acest produs. Așteaptă sau anulează checkout-ul anterior.");
+        }
+    }
+
+    private void releaseAbandonedCheckouts(Long listingId) {
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(30);
+        List<MarketplaceOrder> stale = orderRepository.findByListingIdAndEscrowStatusAndCreatedAtBefore(
+                listingId, EscrowStatus.PENDING_PAYMENT, threshold);
+        for (MarketplaceOrder order : stale) {
+            order.setEscrowStatus(EscrowStatus.CANCELLED);
+            orderRepository.save(order);
+        }
+        restoreListingAvailabilityIfIdle(listingId);
+    }
+
+    private void restoreListingAvailabilityIfIdle(Long listingId) {
+        List<EscrowStatus> active = List.of(
+                EscrowStatus.PENDING_PAYMENT, EscrowStatus.PAID,
+                EscrowStatus.ESCROW_ACTIVE, EscrowStatus.SHIPPED, EscrowStatus.DELIVERED
+        );
+        if (orderRepository.existsByListingIdAndEscrowStatusIn(listingId, active)) {
+            return;
+        }
+        productRepository.findById(listingId).ifPresent(p -> {
+            String status = p.getStatus() != null ? p.getStatus().toUpperCase() : "";
+            if ("PENDING_PAYMENT".equals(status)) {
+                p.setStatus("AVAILABLE");
+                productRepository.save(p);
+            }
+        });
     }
 
     private MarketplaceOrder getOrderForSeller(Long orderId, Long sellerId) {

@@ -163,7 +163,8 @@ export default function ProductDetails() {
       const res = await buyNow(product.id)
       if (res.url) window.location.href = res.url
     } catch (err) {
-      notifyError(err, 'Nu s-a putut iniția plata.')
+      const msg = err.response?.data?.message || err.friendlyMessage || err.response?.data
+      notifyError(err, typeof msg === 'string' ? msg : 'Nu s-a putut iniția plata.')
     } finally {
       setBuyLoading(false)
     }
