@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 "/api/auth/refresh"
                         ).permitAll()
                         .requestMatchers("/api/payments/webhook", "/api/identity/webhook").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/payments/config").permitAll()
                         .requestMatchers("/chat/**", "/ws/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/products/by-category", "/api/products/meta/**").permitAll()

@@ -1,6 +1,7 @@
 # Ignoră setările editorului (văzut în imaginea ta)
 .idea/
 .vscode/
+.cursor/
 
 # Ignoră dependențele de Node.js (sunt enorme și blochează Git-ul!)
 node_modules/

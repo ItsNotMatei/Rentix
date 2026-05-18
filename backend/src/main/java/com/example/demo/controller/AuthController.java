@@ -35,12 +35,11 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<LoginResultDto> signin(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
-        LoginResultDto result = authService.initiateLogin(request);
+    public ResponseEntity<?> signin(@Valid @RequestBody LoginRequest request, HttpServletResponse response) {
+        Object result = authService.initiateLogin(request);
 
-        // Scrie cookie-urile dacă utilizatorul a făcut bypass la 2FA (ADMIN, MODERATOR, SUPER_ADMIN)
-        if (!result.isRequiresTwoFactor() && result.getAuthResponse() != null) {
-            authCookieService.writeAuthCookies(response, result.getAuthResponse());
+        if (result instanceof AuthResponse auth) {
+            authCookieService.writeAuthCookies(response, auth);
         }
 
         return ResponseEntity.ok(result);

@@ -11,10 +11,14 @@ const authApi = axios.create({
 const register = (username, email, password) =>
   authApi.post('/api/auth/signup', { nume: username, email, password })
 
-/** Returns { requiresTwoFactor, challengeId, message } — no session until verify2fa */
+/** Staff: AuthResponse cu user. Utilizatori: { requiresTwoFactor, challengeId, message } */
 const login = async (email, password) => {
   const response = await authApi.post('/api/auth/signin', { email, password })
-  return response.data
+  const data = response.data
+  if (data?.user) {
+    setStoredUser(data.user)
+  }
+  return data
 }
 
 const verify2fa = async (challengeId, code) => {
