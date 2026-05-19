@@ -33,6 +33,17 @@ public class Reservation {
     @Enumerated(EnumType.STRING)
     private ReservationStatus status;
 
+    /** Proprietarul confirmă returnarea obiectului după încheierea perioadei. */
+    @Setter
+    private Boolean returnConfirmed = false;
+
+    @Setter
+    @Column(length = 500)
+    private String returnCondition;
+
+    @Setter
+    private java.time.LocalDateTime returnConfirmedAt;
+
     public Reservation() {
     }
 

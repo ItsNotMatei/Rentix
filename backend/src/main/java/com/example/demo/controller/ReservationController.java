@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/reservations")
@@ -41,6 +42,7 @@ public class ReservationController {
         List<String> dates = new ArrayList<>();
 
         for (var reservation : reservations) {
+            if (reservation.getStartDate() == null || reservation.getEndDate() == null) continue;
             LocalDate current = reservation.getStartDate();
             while (!current.isAfter(reservation.getEndDate())) {
                 dates.add(current.toString());
@@ -48,6 +50,22 @@ public class ReservationController {
             }
         }
         return dates;
+    }
+
+    @GetMapping("/owner/pending-returns")
+    public List<Map<String, Object>> pendingReturns() {
+        Long uid = SecurityUtils.currentUserId();
+        reservationService.updateStatuses();
+        return reservationService.getPendingReturnsForOwner(uid);
+    }
+
+    @PostMapping("/{id}/confirm-return")
+    public Reservation confirmReturn(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
+    ) {
+        Long uid = SecurityUtils.currentUserId();
+        return reservationService.confirmReturn(id, uid, body.get("condition"));
     }
 
     @PostMapping("/update-statuses")

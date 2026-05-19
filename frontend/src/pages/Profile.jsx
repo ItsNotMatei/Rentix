@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { User, MessageCircle, Package, Heart, Star, Shield, LogOut, CheckCircle, Crown, Check, X, Zap } from 'lucide-react';
+import { User, MessageCircle, Package, Heart, Star, Shield, LogOut, CheckCircle, Crown, Check, X, Zap, CalendarDays } from 'lucide-react';
+import OwnerReturnsPanel from '@/components/booking/OwnerReturnsPanel';
 import SockJS from 'sockjs-client';
 import Stomp from 'stompjs';
 import axios from 'axios';
@@ -203,6 +204,13 @@ const Profile = () => {
                         <Link to="/chat" className="auth-submit-btn" style={{ display: 'inline-flex', width: 'auto', textDecoration: 'none' }}>
                             Deschide mesajele
                         </Link>
+                    </div>
+                );
+            case 'inchirieri':
+                return (
+                    <div className="tab-content-fade">
+                        <h2 className="tab-section-title">Închirierile mele (proprietar)</h2>
+                        <OwnerReturnsPanel />
                     </div>
                 );
             case 'comenzi':
@@ -492,6 +500,14 @@ const Profile = () => {
                         >
                             <Package size={18} />
                             <span>Comenzile mele</span>
+                        </button>
+
+                        <button
+                            className={`menu-btn ${activeTab === 'inchirieri' ? 'active' : ''}`}
+                            onClick={() => handleTabChange('inchirieri')}
+                        >
+                            <CalendarDays size={18} />
+                            <span>Returnări închirieri</span>
                         </button>
 
                         <button

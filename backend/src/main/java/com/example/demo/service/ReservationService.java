@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class ReservationService {
@@ -79,7 +82,76 @@ public class ReservationService {
     }
 
     public List<Reservation> getReservationsForAnunt(Long anuntId) {
-        return reservationRepository.findByAnuntId(anuntId);
+        return reservationRepository.findByAnuntId(anuntId).stream()
+                .filter(this::blocksCalendar)
+                .toList();
+    }
+
+    public List<Map<String, Object>> getPendingReturnsForOwner(Long ownerId) {
+        return reservationRepository.findPendingReturnsByOwnerId(ownerId).stream()
+                .map(this::toOwnerReturnDto)
+                .toList();
+    }
+
+    @Transactional
+    public Reservation confirmReturn(Long reservationId, Long ownerId, String condition) {
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("Rezervare inexistentă."));
+
+        Product product = productRepository.findById(reservation.getAnunt().getId())
+                .orElseThrow(() -> new IllegalArgumentException("Anunț inexistent."));
+        if (product.getUserId() == null || !product.getUserId().equals(ownerId)) {
+            throw new IllegalArgumentException("Doar proprietarul poate confirma returnarea.");
+        }
+        if (reservation.getStatus() != ReservationStatus.COMPLETED) {
+            throw new IllegalArgumentException("Returnarea poate fi confirmată doar după încheierea închirierii.");
+        }
+        if (Boolean.TRUE.equals(reservation.getReturnConfirmed())) {
+            throw new IllegalArgumentException("Returnarea a fost deja confirmată.");
+        }
+        if (condition == null || condition.isBlank()) {
+            throw new IllegalArgumentException("Descrie starea obiectului returnat.");
+        }
+
+        reservation.setReturnCondition(condition.trim());
+        reservation.setReturnConfirmed(true);
+        reservation.setReturnConfirmedAt(LocalDateTime.now());
+        reservationRepository.save(reservation);
+
+        if (isSafeReturn(condition)) {
+            product.setStatus("AVAILABLE");
+            productRepository.save(product);
+        }
+        return reservation;
+    }
+
+    private boolean isSafeReturn(String condition) {
+        String lower = condition.toLowerCase();
+        return !(lower.contains("deteriorat") || lower.contains("distrus")
+                || lower.contains("stricat") || lower.contains("damage")
+                || lower.contains("damaged") || lower.contains("pierdut"));
+    }
+
+    private boolean blocksCalendar(Reservation r) {
+        if (r.getStatus() == ReservationStatus.CONFIRMED || r.getStatus() == ReservationStatus.ACTIVE) {
+            return true;
+        }
+        return r.getStatus() == ReservationStatus.COMPLETED
+                && !Boolean.TRUE.equals(r.getReturnConfirmed());
+    }
+
+    private Map<String, Object> toOwnerReturnDto(Reservation r) {
+        Product product = productRepository.findById(r.getAnunt().getId()).orElse(null);
+        Map<String, Object> dto = new HashMap<>();
+        dto.put("id", r.getId());
+        dto.put("anuntId", r.getAnunt() != null ? r.getAnunt().getId() : null);
+        dto.put("listingTitle", product != null ? product.getTitlu() : "Anunț");
+        dto.put("renterName", r.getUser() != null ? r.getUser().getNume() : "Chiriaș");
+        dto.put("renterId", r.getUser() != null ? r.getUser().getId() : null);
+        dto.put("startDate", r.getStartDate() != null ? r.getStartDate().toString() : null);
+        dto.put("endDate", r.getEndDate() != null ? r.getEndDate().toString() : null);
+        dto.put("status", r.getStatus() != null ? r.getStatus().name() : null);
+        return dto;
     }
 
     public void updateStatuses() {

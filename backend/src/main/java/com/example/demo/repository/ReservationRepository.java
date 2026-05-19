@@ -14,9 +14,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     SELECT COUNT(r) > 0
     FROM Reservation r
     WHERE r.anunt.id = :anuntId
-    AND r.status IN (
-        com.example.demo.model.ReservationStatus.CONFIRMED,
-        com.example.demo.model.ReservationStatus.ACTIVE
+    AND (
+        r.status IN (
+            com.example.demo.model.ReservationStatus.CONFIRMED,
+            com.example.demo.model.ReservationStatus.ACTIVE
+        )
+        OR (
+            r.status = com.example.demo.model.ReservationStatus.COMPLETED
+            AND (r.returnConfirmed = false OR r.returnConfirmed IS NULL)
+        )
     )
     AND (
         r.startDate <= :endDate
@@ -38,4 +44,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     );
 
     void deleteByAnunt_Id(Long anuntId);
+
+    @Query("""
+        SELECT r FROM Reservation r
+        JOIN FETCH r.anunt a
+        JOIN FETCH r.user u
+        WHERE a.user.id = :ownerId
+        AND r.status = com.example.demo.model.ReservationStatus.COMPLETED
+        AND (r.returnConfirmed = false OR r.returnConfirmed IS NULL)
+        ORDER BY r.endDate DESC
+        """)
+    List<Reservation> findPendingReturnsByOwnerId(Long ownerId);
 }

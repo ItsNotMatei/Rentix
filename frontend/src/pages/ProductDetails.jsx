@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Calendar, Clock, MapPin, MessageSquare, Share2, ShieldCheck, Star, Tag } from 'lucide-react'
+import { Calendar, Clock, Flag, MapPin, MessageSquare, Share2, ShieldCheck, Star, Tag } from 'lucide-react'
 import AppLayout from '@/components/layout/AppLayout'
 import ImageGallery from '@/components/listing/ImageGallery'
 import FavoriteButton from '@/components/listing/FavoriteButton'
@@ -17,6 +17,7 @@ import { toast } from '@/lib/toast'
 import { buyNow, rentalCheckout } from '@/services/paymentService'
 import BookingCalendar from '@/components/booking/BookingCalendar'
 import ConfirmDialog from '@/components/ConfirmDialog'
+import ReportListingModal from '@/components/listing/ReportListingModal'
 import { conditionLabel } from '@/lib/listingMeta'
 
 export default function ProductDetails() {
@@ -31,6 +32,7 @@ export default function ProductDetails() {
   const [endDate, setEndDate] = useState('')
   const [bookingError, setBookingError] = useState('')
   const [showOfferModal, setShowOfferModal] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
   const [buyLoading, setBuyLoading] = useState(false)
   const [calendarRefresh, setCalendarRefresh] = useState(0)
   const [deleteOpen, setDeleteOpen] = useState(false)
@@ -196,6 +198,7 @@ export default function ProductDetails() {
   return (
     <AppLayout>
       {showOfferModal && <MakeOfferModal product={product} onClose={() => setShowOfferModal(false)} />}
+      <ReportListingModal listing={product} open={showReportModal} onClose={() => setShowReportModal(false)} />
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
@@ -224,6 +227,11 @@ export default function ProductDetails() {
               </div>
               <div className="flex gap-2">
                 <FavoriteButton productId={product.id} />
+                {getStoredUser()?.id && getStoredUser()?.id !== product.userId && (
+                  <Button variant="secondary" size="icon" title="Raportează" onClick={() => setShowReportModal(true)}>
+                    <Flag size={18} />
+                  </Button>
+                )}
                 <Button variant="secondary" size="icon" onClick={handleShare}><Share2 size={18} /></Button>
                 {canModerateDelete && (
                   <Button variant="secondary" size="sm" className="text-red-600" onClick={() => setDeleteOpen(true)}>

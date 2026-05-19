@@ -1,22 +1,40 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CheckCircle, MapPin } from 'lucide-react'
+import { CheckCircle, Flag, MapPin } from 'lucide-react'
 import { motion } from 'framer-motion'
 import FavoriteButton from './FavoriteButton'
+import ReportListingModal from './ReportListingModal'
+import { getStoredUser } from '@/services/api'
 import { Badge } from '@/components/ui/badge'
 import { conditionLabel } from '@/lib/listingMeta'
 
 export default function ListingCard({ listing, showAdminDelete, onDelete }) {
   const navigate = useNavigate()
+  const [reportOpen, setReportOpen] = useState(false)
+  const currentUser = getStoredUser()
+  const isOwner = currentUser?.id && listing.userId === currentUser.id
   const image = listing.imageUrl || listing.images?.[0]
 
   return (
+    <>
+    <ReportListingModal listing={listing} open={reportOpen} onClose={() => setReportOpen(false)} />
     <motion.article
       layout
       whileHover={{ y: -4 }}
       className="group relative cursor-pointer overflow-hidden rounded-2xl border border-border bg-white shadow-[var(--shadow-card)]"
       onClick={() => navigate(`/product/${listing.id}`)}
     >
-      <div className="absolute right-3 top-3 z-10" onClick={(e) => e.stopPropagation()}>
+      <div className="absolute right-3 top-3 z-10 flex gap-1" onClick={(e) => e.stopPropagation()}>
+        {!isOwner && currentUser?.id && (
+          <button
+            type="button"
+            title="Raportează"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-white/95 text-slate-600 shadow hover:text-brand-700"
+            onClick={() => setReportOpen(true)}
+          >
+            <Flag size={16} />
+          </button>
+        )}
         <FavoriteButton productId={listing.id} />
       </div>
       {showAdminDelete && (
@@ -66,5 +84,6 @@ export default function ListingCard({ listing, showAdminDelete, onDelete }) {
         </div>
       </div>
     </motion.article>
+    </>
   )
 }
