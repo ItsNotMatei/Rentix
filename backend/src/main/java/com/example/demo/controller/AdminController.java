@@ -4,6 +4,7 @@ import com.example.demo.model.ModerationReport;
 import com.example.demo.model.User;
 import com.example.demo.security.SecurityUtils;
 import com.example.demo.service.AdminService;
+import com.example.demo.service.ListingReportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import java.util.Map;
 public class AdminController {
 
     private final AdminService adminService;
+    private final ListingReportService listingReportService;
 
     @GetMapping("/stats")
     public Map<String, Object> stats() {
@@ -122,5 +124,22 @@ public class AdminController {
     public ResponseEntity<Map<String, String>> cleanupData() {
         adminService.cleanupDemoData();
         return ResponseEntity.ok(Map.of("message", "Datele demo au fost șterse. Conturile staff au fost păstrate."));
+    }
+
+    @GetMapping("/listing-reports")
+    public ResponseEntity<?> listingReports(@RequestParam(required = false) String status) {
+        return ResponseEntity.ok(listingReportService.listForAdmin(status));
+    }
+
+    @PatchMapping("/listing-reports/{id}/dismiss")
+    public ResponseEntity<?> dismissListingReport(@PathVariable Long id) {
+        listingReportService.dismiss(id);
+        return ResponseEntity.ok(Map.of("message", "Raport respins."));
+    }
+
+    @PatchMapping("/listing-reports/{id}/review")
+    public ResponseEntity<?> reviewListingReport(@PathVariable Long id) {
+        listingReportService.markReviewed(id);
+        return ResponseEntity.ok(Map.of("message", "Raport marcat ca revizuit."));
     }
 }

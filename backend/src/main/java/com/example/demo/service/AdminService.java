@@ -25,6 +25,7 @@ public class AdminService {
     private final ReviewRepository reviewRepository;
     private final ReservationRepository reservationRepository;
     private final ModerationReportRepository reportRepository;
+    private final ListingReportRepository listingReportRepository;
     private final ConversationRepository conversationRepository;
     private final DirectMessageRepository messageRepository;
     private final DataCleanupService dataCleanupService;
@@ -37,7 +38,8 @@ public class AdminService {
         stats.put("listings", productRepository.count());
         stats.put("reviews", reviewRepository.count());
         stats.put("reservations", reservationRepository.count());
-        stats.put("openReports", reportRepository.countByStatus("OPEN"));
+        stats.put("openReports", reportRepository.countByStatus("OPEN") + listingReportRepository.countByStatus("OPEN"));
+        stats.put("openListingReports", listingReportRepository.countByStatus("OPEN"));
         stats.put("conversations", conversationRepository.count());
         stats.put("messages", messageRepository.count());
         return stats;
@@ -166,6 +168,8 @@ public class AdminService {
             row.put("startDate", r.getStartDate() != null ? r.getStartDate().toString() : null);
             row.put("endDate", r.getEndDate() != null ? r.getEndDate().toString() : null);
             row.put("status", r.getStatus() != null ? r.getStatus().name() : "—");
+            row.put("returnConfirmed", Boolean.TRUE.equals(r.getReturnConfirmed()));
+            row.put("returnCondition", r.getReturnCondition());
             return row;
         }).toList();
     }

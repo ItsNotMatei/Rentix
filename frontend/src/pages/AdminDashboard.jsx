@@ -69,7 +69,7 @@ export default function AdminDashboard() {
         const res = await api.get(`/api/admin/reviews?page=${page}&size=15`)
         setReviews(res.data)
       } else if (tab === 'reports') {
-        const res = await api.get('/api/admin/reports')
+        const res = await api.get('/api/admin/listing-reports')
         setReports(res.data)
       } else if (tab === 'bookings') {
         const res = await api.get('/api/admin/bookings')
@@ -95,6 +95,26 @@ export default function AdminDashboard() {
       loadTab()
     } catch (err) {
       notifyError(err, 'Blocarea a eșuat.')
+    }
+  }
+
+  const handleDismissReport = async (reportId) => {
+    try {
+      await api.patch(`/api/admin/listing-reports/${reportId}/dismiss`)
+      toast.success('Raport respins.')
+      loadTab()
+    } catch (err) {
+      notifyError(err, 'Acțiunea a eșuat.')
+    }
+  }
+
+  const handleReviewReport = async (reportId) => {
+    try {
+      await api.patch(`/api/admin/listing-reports/${reportId}/review`)
+      toast.success('Raport marcat ca revizuit.')
+      loadTab()
+    } catch (err) {
+      notifyError(err, 'Acțiunea a eșuat.')
     }
   }
 
@@ -268,8 +288,32 @@ export default function AdminDashboard() {
 
         {tab === 'reports' && (
           <AdminTable
-            headers={['ID', 'Motiv', 'Status', 'Anunț']}
-            rows={(reports || []).map((r) => [r.id, r.reason || r.motiv || '—', r.status || '—', r.targetId || r.listingId || r.productId || '—'])}
+            headers={['ID', 'Raportor', 'Anunț', 'Motiv', 'Status', 'Data', 'Acțiuni']}
+            rows={(reports || []).map((r) => [
+              r.id,
+              r.reporterName || r.userId || '—',
+              <Link key={`l-${r.id}`} to={`/product/${r.anuntId}`} className="text-brand-700 hover:underline">
+                {r.listingTitle || `#${r.anuntId}`}
+              </Link>,
+              <span key={`reason-${r.id}`} className="max-w-xs block whitespace-pre-wrap">{r.reason || '—'}</span>,
+              r.status || '—',
+              r.createdAt ? new Date(r.createdAt).toLocaleString('ro-RO') : '—',
+              <span key={`act-${r.id}`} className="flex flex-wrap gap-2">
+                {r.status === 'OPEN' && (
+                  <>
+                    <button type="button" className="text-sm font-medium text-slate-600 hover:underline" onClick={() => handleDismissReport(r.id)}>
+                      Respinge
+                    </button>
+                    <Link to={`/product/${r.anuntId}`} className="text-sm font-medium text-brand-700 hover:underline">
+                      Vezi anunț
+                    </Link>
+                    <button type="button" className="text-sm font-medium text-emerald-700 hover:underline" onClick={() => handleReviewReport(r.id)}>
+                      Marchează revizuit
+                    </button>
+                  </>
+                )}
+              </span>,
+            ])}
           />
         )}
 
