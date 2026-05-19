@@ -5,6 +5,7 @@ import AppLayout from '@/components/layout/AppLayout'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import api from '@/services/api'
+import { syncOrderPayment } from '@/services/paymentService'
 
 export default function CheckoutSuccess() {
   const [searchParams] = useSearchParams()
@@ -17,21 +18,41 @@ export default function CheckoutSuccess() {
   useEffect(() => {
     if (!orderId) return
     let attempts = 0
-    const poll = () => {
-      api.get('/api/payments/orders')
-        .then((res) => {
-          const found = res.data.find((o) => String(o.id) === String(orderId))
-          if (found) setOrder(found)
-          if (found?.escrowStatus === 'ESCROW_ACTIVE' || found?.escrowStatus === 'COMPLETED' || attempts >= 8) {
-            setLoading(false)
-            return
-          }
-          attempts += 1
-          setTimeout(poll, 1500)
-        })
-        .catch(() => setLoading(false))
+    let cancelled = false
+
+    const loadOrder = () =>
+      api.get('/api/payments/orders').then((res) => {
+        const found = res.data.find((o) => String(o.id) === String(orderId))
+        if (found) setOrder(found)
+        return found
+      })
+
+    const poll = async () => {
+      try {
+        if (attempts === 0) {
+          await syncOrderPayment(orderId).catch(() => {})
+        }
+        const found = await loadOrder()
+        if (
+          cancelled ||
+          found?.escrowStatus === 'ESCROW_ACTIVE' ||
+          found?.escrowStatus === 'COMPLETED' ||
+          found?.escrowStatus === 'CANCELLED' ||
+          attempts >= 8
+        ) {
+          if (!cancelled) setLoading(false)
+          return
+        }
+        attempts += 1
+        setTimeout(poll, 1500)
+      } catch {
+        if (!cancelled) setLoading(false)
+      }
     }
     poll()
+    return () => {
+      cancelled = true
+    }
   }, [orderId])
 
   const isRental = type === 'rental' || order?.rental

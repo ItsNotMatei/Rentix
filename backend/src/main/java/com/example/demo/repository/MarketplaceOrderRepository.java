@@ -20,4 +20,7 @@ public interface MarketplaceOrderRepository extends JpaRepository<MarketplaceOrd
 
     List<MarketplaceOrder> findByListingIdAndEscrowStatusAndCreatedAtBefore(
             Long listingId, EscrowStatus escrowStatus, LocalDateTime createdAtBefore);
+
+    List<MarketplaceOrder> findByEscrowStatusAndCreatedAtBefore(
+            EscrowStatus escrowStatus, LocalDateTime createdAtBefore);
 }
