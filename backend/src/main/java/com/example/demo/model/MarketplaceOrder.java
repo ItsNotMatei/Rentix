@@ -42,7 +42,7 @@ public class MarketplaceOrder {
     private String stripeCheckoutSessionId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "escrow_status", nullable = false)
+    @Column(name = "escrow_status", nullable = false, length = 32, columnDefinition = "VARCHAR(32)")
     private EscrowStatus escrowStatus = EscrowStatus.PENDING_PAYMENT;
 
     @Column(name = "buy_now", nullable = false)

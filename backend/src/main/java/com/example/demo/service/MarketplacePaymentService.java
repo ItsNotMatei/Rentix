@@ -17,6 +17,7 @@ import com.stripe.param.checkout.SessionCreateParams;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -158,6 +159,51 @@ public class MarketplacePaymentService {
         orderRepository.save(order);
 
         return Map.of("url", session.getUrl(), "orderId", order.getId().toString(), "amountRon", String.valueOf(amountCents / 100.0));
+    }
+
+    /**
+     * Fallback when Stripe webhook is not received (typical in local dev).
+     * Reads Checkout Session from Stripe and advances order if payment succeeded.
+     */
+    @Transactional
+    public MarketplaceOrder syncOrderFromStripe(Long orderId, Long userId) throws Exception {
+        MarketplaceOrder order = orderRepository.findById(orderId).orElseThrow();
+        if (!order.getBuyerId().equals(userId) && !order.getSellerId().equals(userId)) {
+            throw new IllegalArgumentException("Acces interzis.");
+        }
+        if (order.getEscrowStatus() != EscrowStatus.PENDING_PAYMENT) {
+            return order;
+        }
+        String sessionId = order.getStripeCheckoutSessionId();
+        if (sessionId == null || sessionId.isBlank()) {
+            return order;
+        }
+        ensureStripeConfigured();
+        Session session = Session.retrieve(sessionId);
+        if ("paid".equals(session.getPaymentStatus())) {
+            onCheckoutCompleted(session);
+            return orderRepository.findById(orderId).orElseThrow();
+        }
+        if ("expired".equals(session.getStatus())) {
+            order.setEscrowStatus(EscrowStatus.CANCELLED);
+            orderRepository.save(order);
+            restoreListingAvailabilityIfIdle(order.getListingId());
+        }
+        return orderRepository.findById(orderId).orElseThrow();
+    }
+
+    /** Cancels stale checkouts across all listings (runs every 10 minutes). */
+    @Scheduled(fixedRate = 600_000)
+    @Transactional
+    public void cleanupAbandonedCheckoutsGlobally() {
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(30);
+        List<MarketplaceOrder> stale = orderRepository.findByEscrowStatusAndCreatedAtBefore(
+                EscrowStatus.PENDING_PAYMENT, threshold);
+        for (MarketplaceOrder order : stale) {
+            order.setEscrowStatus(EscrowStatus.CANCELLED);
+            orderRepository.save(order);
+            restoreListingAvailabilityIfIdle(order.getListingId());
+        }
     }
 
     @Transactional
@@ -305,6 +351,12 @@ public class MarketplacePaymentService {
         order.setEscrowStatus(EscrowStatus.COMPLETED);
         order.setCompletedAt(java.time.LocalDateTime.now());
         orderRepository.save(order);
+    }
+
+    private void ensureStripeConfigured() {
+        if (stripeProperties.getSecretKey() == null || stripeProperties.getSecretKey().isBlank()) {
+            throw new IllegalArgumentException("Stripe nu este configurat (STRIPE_SECRET_KEY).");
+        }
     }
 
     private Session createEscrowCheckoutSession(

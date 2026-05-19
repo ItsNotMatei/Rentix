@@ -9,6 +9,9 @@ export const payAcceptedOffer = (offerId) =>
 export const getMyOrders = () =>
     api.get('/api/payments/orders').then(r => r.data);
 
+export const syncOrderPayment = (orderId) =>
+    api.post(`/api/payments/orders/${orderId}/sync-payment`).then(r => r.data);
+
 export const shipOrder = (orderId) =>
     api.post(`/api/payments/orders/${orderId}/ship`);
 
